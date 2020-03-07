@@ -5,8 +5,40 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SyllabusChecker"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
-        
+        Title="SyllabusChecker" 
+        MinHeight="320" MinWidth="440" Height="320" Width="440" ResizeMode="NoResize">
+    
+    <Grid Background="#FFEFEFDF">
+        <TextBlock Margin="4, 4, 4, 4" Text="Выберите файл макета:" FontSize="14"
+                   HorizontalAlignment="Left" VerticalAlignment="Top"/>
+        <TextBox x:Name="TbModelPath" Margin="4, 28, 100, 4" Text="" FontSize="14"  IsReadOnly="True"
+                 HorizontalAlignment="Stretch" VerticalAlignment="Top" Background="{x:Null}"/>
+        <Button x:Name="BtnSelectModelPath" Margin="4, 27, 4, 4" Content="Обзор..." FontSize="14"
+                HorizontalAlignment="Right" VerticalAlignment="Top" Width="92"
+                Click="BtnSelectModelPath_Click"/>
+
+        <TextBlock Margin="4, 64, 4, 4" Text="Выберите проверяемый файл:" FontSize="14"
+                   HorizontalAlignment="Left" VerticalAlignment="Top"/>
+        <TextBox x:Name="TbSyllablePath" Margin="4, 88, 100, 4" Text="" FontSize="14"  IsReadOnly="True"
+                 HorizontalAlignment="Stretch" VerticalAlignment="Top" Background="{x:Null}"/>
+        <Button x:Name="BtnSelectSyllablePath" Margin="4, 87, 4, 4" Content="Обзор..." FontSize="14"
+                HorizontalAlignment="Right" VerticalAlignment="Top" Width="92"
+                Click="BtnSelectSyllablePath_Click"/>
+
+        <TextBlock Margin="4, 128, 4, 4" Text="Выберите папку для сохранения результата:" FontSize="14"
+                   HorizontalAlignment="Left" VerticalAlignment="Top"/>
+        <TextBox x:Name="TbResultFolderPath" Margin="4, 152, 100, 4" Text="" FontSize="14"  IsReadOnly="True"
+                 HorizontalAlignment="Stretch" VerticalAlignment="Top" Background="{x:Null}"/>
+        <Button x:Name="BtnSelectResultFolder" Margin="4, 151, 4, 4" Content="Обзор..." FontSize="14"
+                HorizontalAlignment="Right" VerticalAlignment="Top" Width="92"
+                Click="BtnSelectResultFolder_Click"/>
+
+        <Button x:Name="BtnCheckSyllableStart" Margin="4, 200, 4, 4" Content="Выполнить проверку" FontSize="14"
+                HorizontalAlignment="Center" VerticalAlignment="Top" Width="160"
+                Click="BtnCheckSyllableStart_Click"/>
+
+         <!--Сюда можно будет добавить краткое руководство для пользователя-->
+        <Button x:Name="BtnAbout" Margin="4, 4, 4, 4" Content="О программе..."
+                HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="100" Visibility="Hidden"/>
     </Grid>
 </Window>
