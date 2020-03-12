@@ -26,10 +26,6 @@ namespace SyllabusChecker
             {
                 Paragraph par_model = title_model.SectionParagraphs[i];
                 Paragraph par_syllable = title_syllable.SectionParagraphs[i];
-
-                ///Здесь нужна помощь
-                ///нужно определить, какие свойства у параграфов нужно сравнивать, и как это делать
-                ///потому что шрифты например -- это не просто поля почему-то
                 
                 if ((par_model.Text != par_syllable.Text) ||
                     (par_model.Alignment != par_syllable.Alignment) ||

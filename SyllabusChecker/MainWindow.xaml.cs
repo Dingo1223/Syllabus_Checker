@@ -84,38 +84,6 @@ namespace SyllabusChecker
 
             //Запуск проверки
             Checker checker = new Checker(InputData);
-
-            /* Этот коммент сохранить как демонстрацию возможностей библиотеки */
-
-            //var result = "";
-            //var document = DocX.Load(InputData.ModelPath);
-            //var sections = document.GetSections();
-            //result += "Секций: " + sections.Count.ToString() + " \n";
-            //for (int i = 0; i < sections.Count; i++)
-            //{
-            //    result += "В секции " + i.ToString() + " параграфов: " + sections[i].SectionParagraphs.Count.ToString() + " \n";
-            //    if (sections[i].SectionParagraphs.Count > 0)
-            //    {
-            //        result += "И начинается она с: " + sections[i].SectionParagraphs[0].Text + " \n";
-            //    }
-            //    result += "Таблиц в ней: " + sections[i].Tables.Count + " \n";
-            //    if (sections[i].Tables.Count > 0)
-            //    {
-            //        result += "Пример доставания ячейки: " + sections[i].Tables[0].Rows[0].Cells[0] + " \n";
-            //    }
-            //}
-
-            //for (int i = 0; i < sections.Count; i++)
-            //{
-            //    var content = "";
-            //    for (int j = 0; j < sections[i].SectionParagraphs.Count; j++)
-            //    {
-            //        if (sections[i].SectionParagraphs[j].Text.Length > 0)
-            //        {
-            //            content += sections[i].SectionParagraphs[j].Text + " " + j.ToString() + "\n";
-            //        }
-            //    }
-            //}
         }
     }
 }
