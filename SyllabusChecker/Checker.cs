@@ -1,4 +1,7 @@
-﻿using Xceed.Document.NET;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Xceed.Document.NET;
 using Xceed.Words.NET;
 using MessageBox = System.Windows.MessageBox;
 
@@ -14,6 +17,12 @@ namespace SyllabusChecker
             Model = DocX.Load(inputData.ModelPath);
             Syllable = DocX.Load(inputData.SyllablePath);
             CheckTitlePage();
+
+            //Получаем разбитые на секции модель и РП
+            List<DocSection> ModelSections = GetDocSections(Model.Sections[1]);
+            List<DocSection> SyllableSections = GetDocSections(Syllable.Sections[1]);
+
+            //Дальше надо их проверять
         }
 
         //Проверка титульника
@@ -55,6 +64,56 @@ namespace SyllabusChecker
                     break;
                 }
             }
+        }
+
+        //Разбиение документа на секции по наименованиям разделов
+        //Список наименований лежит в ресурсах
+        //Результат -- список секций
+        //Каждая секция -- заголовок секции + всё, что после него и до следующего заголовка
+        public List<DocSection> GetDocSections(Section doc)
+        {
+            //Получаем имена разделов (хранятся в ресурсах)
+            string names = Properties.Resources.NamesOfSections;
+            List<string> namesOfSections = names.Split(new string[] {"\r\n"}, 
+                StringSplitOptions.RemoveEmptyEntries).ToList<string>();
+            int ind = 0;
+
+            //Разбиваем док на секции
+            List<DocSection> docSections = new List<DocSection>();
+            for (int i = 0; i < doc.SectionParagraphs.Count; i++)
+            {
+                while (doc.SectionParagraphs[i].Text != namesOfSections[ind]) i++;
+                ind++;
+
+                //Проверяем, достигли ли последнего раздела
+                bool isDocEnding = false;
+                if (ind >= namesOfSections.Count) isDocEnding = true;
+
+                int startedAt = i;
+                List<Paragraph> paragraphs = new List<Paragraph>();
+                if (isDocEnding)
+                {
+                    //Если достигли последнего раздела -- записываем все параграфы до самого конца документа
+                    while (i < doc.SectionParagraphs.Count)
+                    {
+                        paragraphs.Add(doc.SectionParagraphs[i]);
+                        i++;
+                    }
+                }
+                else
+                {
+                    //Если раздел не последний -- записываем все параграфы между двумя соседними разделами
+                    while (doc.SectionParagraphs[i].Text != namesOfSections[ind])
+                    {
+                        paragraphs.Add(doc.SectionParagraphs[i]);
+                        i++;
+                    }
+                }
+                i--;
+                docSections.Add(new DocSection(startedAt, i, paragraphs));
+            }
+
+            return docSections;
         }
     }
 }
