@@ -5,8 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SyllabusChecker"
         mc:Ignorable="d"
-        Title="SyllabusChecker" 
-        MinHeight="320" MinWidth="440" Height="320" Width="440" ResizeMode="NoResize">
+        Title="Проверка рабочей программы" 
+        MinHeight="320" MinWidth="440" Height="320" Width="440" ResizeMode="NoResize"
+        Closing="Window_Closing">
     
     <Grid Background="#FFEFEFDF">
         <TextBlock Margin="4, 4, 4, 4" Text="Выберите файл макета:" FontSize="14"

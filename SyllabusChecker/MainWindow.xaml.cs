@@ -1,8 +1,7 @@
 ﻿using System;
+using System.IO;
 using System.Windows;
 using System.Windows.Forms;
-using Xceed.Document.NET;
-using Xceed.Words.NET;
 using MessageBox = System.Windows.MessageBox;
 
 namespace SyllabusChecker
@@ -19,6 +18,9 @@ namespace SyllabusChecker
         {
             InitializeComponent();
             InputData = new InputData();
+            TbModelPath.Text = InputData.ModelPath;
+            TbSyllablePath.Text = InputData.SyllablePath;
+            TbResultFolderPath.Text = InputData.ResultFolderPath;
         }
 
         //Обработка нажатия на кнопку выбора расположения файла с макетом
@@ -54,7 +56,7 @@ namespace SyllabusChecker
         {
             FolderBrowserDialog fbd = new FolderBrowserDialog
             {
-                RootFolder = Environment.SpecialFolder.Desktop
+                SelectedPath = InputData.ResultFolderPath
             };
             if (fbd.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
@@ -66,56 +68,30 @@ namespace SyllabusChecker
         //Обработка нажатия на кнопку "Выполнить проверку"
         private void BtnCheckSyllableStart_Click(object sender, RoutedEventArgs e)
         {
-            if (InputData.ModelPath == null)
+            if (!(new FileInfo(InputData.ModelPath).Exists) || (InputData.ModelPath == ""))
             {
-                MessageBox.Show("Не выбран файл модели рабочей программы!");
+                MessageBox.Show("Файл модели рабочей программы не выбран или не существует");
                 return;
             }
-            else if (InputData.SyllablePath == null)
+            else if (!(new FileInfo(InputData.SyllablePath).Exists) || (InputData.SyllablePath == ""))
             {
-                MessageBox.Show("Не выбран проверяемый файл рабочей программы!");
-                return;
-            }
-            else if (InputData.ResultFolderPath == null)
-            {
-                MessageBox.Show("Не выбран путь для сохранения результата!");
+                MessageBox.Show("Проверяемый файл рабочей программы не выбран или не существует");
                 return;
             }
 
             //Запуск проверки
             Checker checker = new Checker(InputData);
+        }
 
-            /* Этот коммент сохранить как демонстрацию возможностей библиотеки */
-
-            //var result = "";
-            //var document = DocX.Load(InputData.ModelPath);
-            //var sections = document.GetSections();
-            //result += "Секций: " + sections.Count.ToString() + " \n";
-            //for (int i = 0; i < sections.Count; i++)
-            //{
-            //    result += "В секции " + i.ToString() + " параграфов: " + sections[i].SectionParagraphs.Count.ToString() + " \n";
-            //    if (sections[i].SectionParagraphs.Count > 0)
-            //    {
-            //        result += "И начинается она с: " + sections[i].SectionParagraphs[0].Text + " \n";
-            //    }
-            //    result += "Таблиц в ней: " + sections[i].Tables.Count + " \n";
-            //    if (sections[i].Tables.Count > 0)
-            //    {
-            //        result += "Пример доставания ячейки: " + sections[i].Tables[0].Rows[0].Cells[0] + " \n";
-            //    }
-            //}
-
-            //for (int i = 0; i < sections.Count; i++)
-            //{
-            //    var content = "";
-            //    for (int j = 0; j < sections[i].SectionParagraphs.Count; j++)
-            //    {
-            //        if (sections[i].SectionParagraphs[j].Text.Length > 0)
-            //        {
-            //            content += sections[i].SectionParagraphs[j].Text + " " + j.ToString() + "\n";
-            //        }
-            //    }
-            //}
+        //при закрытии программы сохраняет выбранные пути
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            StreamWriter sw = new StreamWriter(Path.Combine(appDataPath, "paths.txt"), false);
+            sw.WriteLine(InputData.ModelPath);
+            sw.WriteLine(InputData.SyllablePath);
+            sw.WriteLine(InputData.ResultFolderPath);
+            sw.Close();
         }
     }
 }
