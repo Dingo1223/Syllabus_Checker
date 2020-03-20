@@ -81,6 +81,7 @@ namespace SyllabusChecker
 
             //Запуск проверки
             Checker checker = new Checker(InputData);
+            checker.checkParagraphEquality();
         }
 
         //при закрытии программы сохраняет выбранные пути
