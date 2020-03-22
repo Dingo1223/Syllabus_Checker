@@ -42,19 +42,6 @@ namespace SyllabusChecker
                     Paragraph par_syllable = title_syllable.SectionParagraphs[j];
                     if (par_syllable.Text == "") continue;
 
-                    //Т.к. важен только контент, проверку стилей можно временно убрать
-                    /*if ((par_model.Text != par_syllable.Text) ||
-                        (par_model.Alignment != par_syllable.Alignment) ||
-                        (par_model.IndentationAfter != par_syllable.IndentationAfter) ||
-                        (par_model.IndentationBefore != par_syllable.IndentationBefore) ||
-                        (par_model.IndentationFirstLine != par_syllable.IndentationFirstLine) ||
-                        (par_model.IndentationHanging != par_syllable.IndentationHanging) ||
-                        (par_model.IsKeepWithNext != par_syllable.IsKeepWithNext) ||
-                        (par_model.LineSpacing != par_syllable.LineSpacing) ||
-                        (par_model.LineSpacingAfter != par_syllable.LineSpacingAfter) ||
-                        (par_model.LineSpacingBefore != par_syllable.LineSpacingBefore) ||
-                        (par_model.StyleName != par_syllable.StyleName))*/
-
                     if (par_model.Text != par_syllable.Text)
                     {
                         MessageBox.Show("Несоответствие в параграфе №" + i.ToString() +

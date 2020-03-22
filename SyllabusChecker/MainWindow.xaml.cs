@@ -79,12 +79,21 @@ namespace SyllabusChecker
                 return;
             }
 
+            Checker checker;
             //Запуск проверки
-            Checker checker = new Checker(InputData);
+            try
+            {
+                checker = new Checker(InputData);
+            }
+            catch (IOException ex)
+            {
+                MessageBox.Show(ex.Message + "\nЗакройте все приложения, использующие данный файл, чтобы продолжить.");
+                return;
+            }
             checker.checkParagraphEquality();
         }
 
-        //при закрытии программы сохраняет выбранные пути
+        //При закрытии программы сохраняет выбранные пути
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
