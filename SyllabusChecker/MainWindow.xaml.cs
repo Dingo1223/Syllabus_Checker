@@ -90,7 +90,7 @@ namespace SyllabusChecker
                 MessageBox.Show(ex.Message + "\nЗакройте все приложения, использующие данный файл, чтобы продолжить.");
                 return;
             }
-            checker.checkParagraphEquality();
+            //checker.checkParagraphEquality();
         }
 
         //При закрытии программы сохраняет выбранные пути

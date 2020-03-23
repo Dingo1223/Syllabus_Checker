@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Xceed.Document.NET;
 using Xceed.Words.NET;
@@ -16,18 +17,60 @@ namespace SyllabusChecker
         {
             Model = DocX.Load(inputData.ModelPath);
             Syllable = DocX.Load(inputData.SyllablePath);
-            CheckTitlePage();
+            List<int> IndsTitle = CheckTitlePage();
 
             //Получаем разбитые на секции модель и РП
             List<DocSection> ModelSections = GetDocSections(Model.Sections[1]);
             List<DocSection> SyllableSections = GetDocSections(Syllable.Sections[1]);
 
             //Дальше надо их проверять
+            List<int> IndsBody = CheckSyllableSections(ModelSections, SyllableSections);
+
+            //Создание результирующего документа
+            //CreateResultDoc(IndsTitle, IndsBody, inputData);
+        }
+
+        //Создание результирующего документа (с подсветкой ошибочных мест)
+        //Строится на основе Syllable
+        //Параметр indsTitle -- индексы параграфов с ошибками в титульнике
+        //Параметр indsBody -- индексы параграфов с ошибками в остальном документе
+        public void CreateResultDoc(List<int> indsTitle, List<int> indsBody, InputData inputData)
+        {
+            string path = Path.Combine(inputData.ResultFolderPath,
+                Path.GetFileNameWithoutExtension(inputData.SyllablePath) + "_checked.docx");
+            DocX document = DocX.Create(path);
+
+            //Переносим титульник
+            document.InsertSection();
+            for (int i = 0; i < Syllable.Sections[0].SectionParagraphs.Count; i++)
+            {
+                Paragraph p = Syllable.Sections[0].SectionParagraphs[i];
+                if (indsTitle.Contains(i))
+                {
+                    p.Highlight(Highlight.red);
+                }
+                document.Sections[0].InsertParagraph(p);
+            }
+
+            //Переносим остальное
+            document.InsertSection();
+            for (int i = 0; i < Syllable.Sections[1].SectionParagraphs.Count; i++)
+            {
+                Paragraph p = Syllable.Sections[1].SectionParagraphs[i];
+                if (indsBody.Contains(i))
+                {
+                    p.Highlight(Highlight.red);
+                }
+                document.Sections[1].InsertParagraph(p);
+            }
+
+            document.Save();
         }
 
         //Проверка титульника
-        public void CheckTitlePage()
+        public List<int> CheckTitlePage()
         {
+            List<int> indsTitle = new List<int>();
             Section title_model = Model.Sections[0];
             Section title_syllable = Syllable.Sections[0];
             int ind = 0;
@@ -44,13 +87,142 @@ namespace SyllabusChecker
 
                     if (par_model.Text != par_syllable.Text)
                     {
-                        MessageBox.Show("Несоответствие в параграфе №" + i.ToString() +
-                            "\nТекст в макете: " + par_model.Text +
-                            "\nТекст в проверяемой программе: " + par_syllable.Text);
+                        //Записываем номер параграфа, в котором ошибка
+                        indsTitle.Add(j);
+                        //MessageBox.Show("Несоответствие в параграфе №" + i.ToString() +
+                        //    "\nТекст в макете: " + par_model.Text +
+                        //    "\nТекст в проверяемой программе: " + par_syllable.Text);
                     }
                     break;
                 }
             }
+
+            return indsTitle;
+        }
+
+        //Проверка рабочей программы, по разделам
+        public List<int> CheckSyllableSections(List<DocSection> modelSections, List<DocSection> syllableSections)
+        {
+            // !!!!!
+            // СЮДА ЗАПИСЫВАЕМ ТОЧНЫЕ ИНДЕКСЫ ПАРАГРАФОВ ИЗ Syllable, В КОТОРЫХ ОШИБКА
+            // !!!!!
+            List<int> indsBody = new List<int>();
+
+            //Section 0 = Рабочая программа рассмотрена и утверждена на заседании кафедры
+
+
+            //Section 1 = 1 Цели и задачи освоения дисциплины
+            {
+                int ind = 0;
+                int indOfTargets = -1, indOfGoals = -1;
+                //Ищем, где начинаются цели
+                while (!syllableSections[1].Paragraphs[ind].Text.Contains(" освоения дисциплины:") &&
+                    (ind < syllableSections[1].Paragraphs.Count))
+                {
+                    ind++;
+                }
+                if (ind == syllableSections[1].Paragraphs.Count)
+                {
+                    //нет пункта "Цели..."
+                    indsBody.Add(syllableSections[1].StartedAt);
+                }
+                else
+                {
+                    indOfTargets = syllableSections[1].StartedAt + ind;
+                    ind++;
+                }
+
+                bool hasTargets = false, hasGoals = false;
+
+                //Ищем прописанные цели; ищем, где начинаются задачи
+                while ((ind < syllableSections[1].Paragraphs.Count) &&
+                    !syllableSections[1].Paragraphs[ind].Text.Contains("Задачи:"))
+                {
+                    if (!hasTargets && (syllableSections[1].Paragraphs[ind].Text != "")) hasTargets = true;
+                    ind++;
+                }
+                if (ind == syllableSections[1].Paragraphs.Count)
+                {
+                    //нет пункта "Задачи"
+                    indsBody.Add(syllableSections[1].StartedAt);
+                }
+                else
+                {
+                    indOfGoals = syllableSections[1].StartedAt + ind;
+                    ind++;
+                }
+
+                //Ищем прописанные задачи
+                while (ind < syllableSections[1].Paragraphs.Count)
+                {
+                    if (!hasGoals && (syllableSections[1].Paragraphs[ind].Text != ""))
+                    {
+                        hasGoals = true;
+                        break;
+                    }
+                }
+                if (!hasTargets && (indOfTargets != -1)) indsBody.Add(indOfTargets);
+                if (!hasGoals && (indOfGoals != -1)) indsBody.Add(indOfGoals);
+            }
+
+            //Section 2 = 2 Место дисциплины в структуре образовательной программы
+            {
+                int j = 1;
+                for (int i = 1; i < modelSections[2].Paragraphs.Count; i++)
+                {
+                    if (modelSections[2].Paragraphs[i].Text == "") continue;
+                    //Ищем такой же параграф в syllable
+                    while (modelSections[2].Paragraphs[i].Text != syllableSections[2].Paragraphs[j].Text)
+                    {
+                        j++;
+                        if (j >= syllableSections[2].Paragraphs.Count)
+                        {
+                            if (!indsBody.Contains(syllableSections[2].StartedAt))
+                                indsBody.Add(syllableSections[2].StartedAt);
+                            break;
+                        }
+                    }
+                    
+                }
+            }
+
+            //Section 3 = 3 Требования к результатам обучения по дисциплине
+
+
+            //Section 4 = 4 Структура и содержание дисциплины
+
+
+            //Section 5 = 4.1 Структура дисциплины
+
+
+            //Section 6 = 4.2 Содержание разделов дисциплины
+
+
+            //Section 7 = 4.3 Практические занятия(семинары)
+
+
+            //Section 8 = 5 Учебно - методическое обеспечение дисциплины
+
+
+            //Section 9 = 5.1 Основная литература
+
+
+            //Section 10 = 5.2 Дополнительная литература
+
+
+            //Section 11 = 5.3 Периодические издания
+
+
+            //Section 12 = 5.4 Интернет - ресурсы
+
+
+            //Section 13 = 5.5 Программное обеспечение, профессиональные базы данных и информационные справочные системы
+
+
+            //Section 14 = 6 Материально - техническое обеспечение дисциплины
+
+
+            return indsBody;
         }
 
         //Разбиение документа на секции по наименованиям разделов
@@ -90,7 +262,8 @@ namespace SyllabusChecker
                 else
                 {
                     //Если раздел не последний -- записываем все параграфы между двумя соседними разделами
-                    while (i < doc.SectionParagraphs.Count && doc.SectionParagraphs[i].Text != namesOfSections[ind])
+                    while ((i < doc.SectionParagraphs.Count) && 
+                        (doc.SectionParagraphs[i].Text != namesOfSections[ind]))
                     {
                         paragraphs.Add(doc.SectionParagraphs[i]);
                         i++;
