@@ -87,26 +87,55 @@ namespace SyllabusChecker
             // СЮДА ЗАПИСЫВАЕМ ТОЧНЫЕ ИНДЕКСЫ ПАРАГРАФОВ ИЗ Syllable, В КОТОРЫХ ОШИБКА
             // !!!!!
             List<int> indsBody = new List<int>();
-
             //Section 0 = Рабочая программа рассмотрена и утверждена на заседании кафедры
             {
+              /*  int CurrentIndexParagraphSyllable = 0, CurrentIndexParagraphModel = 0;
+                for(int i = 0; i < syllableSections[0].Paragraphs.Count; i++)
+                {
+                    while(syllableSections[0].Paragraphs[i].Text != modelSections[0].Paragraphs[CurrentIndexParagraphModel].Text)
+                    {
+                    }
+                    if(syllableSections[0].Paragraphs[i].Text != "" || (syllableSections[0].Paragraphs[i].Text == "" && modelSections[0].Paragraphs[i].Text == ""))
+                    {
+                    }
+                    if(syllableSections[0].Paragraphs[i].Text == modelSections[0].Paragraphs[CurrentIndexParagraphModel].Text)
+                    {
+                        CurrentIndexParagraphModel++;
+                    }
+                    else
+                    {
+                        while (CurrentIndexParagraphModel < modelSections[0].Paragraphs.Count && syllableSections[0].Paragraphs[i].Text != modelSections[0].Paragraphs[CurrentIndexParagraphModel].Text);
+                        {
+                            CurrentIndexParagraphModel++;
+                        }
+                        if(CurrentIndexParagraphModel != modelSections[0].Paragraphs.Count)
+                        {
+                            CurrentIndexParagraphModel++;
+                        }
+                        else
+                        {
+                            //ошибка
+                        }
+                   }
+                }
+                */
                 for (int i = 0; i <= 9; i++) //проверяем первые 10 параграфов, они должны быть идентичны
                 {
-                    if (syllableSections[0].Paragraphs[i].Text != modelSections[0].Paragraphs[i].Text)
+                    if (i < syllableSections[0].Paragraphs.Count && i < modelSections[0].Paragraphs.Count && syllableSections[0].Paragraphs[i].Text != modelSections[0].Paragraphs[i].Text)
                     {
                         indsBody.Add(syllableSections[0].StartedAt + i);
                     }
                 }
 
                 //Обязательно должен быт указан исполнитель, т.е. параграф должен отличаться от того, что в макете
-                if (syllableSections[0].Paragraphs[10].Text == modelSections[0].Paragraphs[10].Text)
+                if (10 < syllableSections[0].Paragraphs.Count && 10 < modelSections[0].Paragraphs.Count && syllableSections[0].Paragraphs[10].Text == modelSections[0].Paragraphs[10].Text)
                 {
                     indsBody.Add(syllableSections[0].StartedAt + 10);
                     //ошибка
                 }
 
                 //обязательно должно быть идентичено
-                if (syllableSections[0].Paragraphs[11].Text != modelSections[0].Paragraphs[11].Text)
+                if (11 < syllableSections[0].Paragraphs.Count && 11 < modelSections[0].Paragraphs.Count && syllableSections[0].Paragraphs[11].Text != modelSections[0].Paragraphs[11].Text)
                 {
                     indsBody.Add(syllableSections[0].StartedAt + 11);
                 }
@@ -115,22 +144,28 @@ namespace SyllabusChecker
                 //с 13 по  22 должны быть идентичны
                 for (int i = 13; i <= 22; i++)
                 {
-                    if (syllableSections[0].Paragraphs[i].Text != modelSections[0].Paragraphs[i].Text)
+                    if (i < syllableSections[0].Paragraphs.Count && i < modelSections[0].Paragraphs.Count && syllableSections[0].Paragraphs[i].Text != modelSections[0].Paragraphs[i].Text)
                     {
                         indsBody.Add(syllableSections[0].StartedAt + i);
                     }
                 }
 
                 //Обязательно должен быт указан исполнитель, т.е. параграф должен отличаться от того, что в макете
-                if (syllableSections[0].Paragraphs[23].Text == modelSections[0].Paragraphs[23].Text)
+                if (23 < syllableSections[0].Paragraphs.Count && 23 < modelSections[0].Paragraphs.Count && syllableSections[0].Paragraphs[23].Text == modelSections[0].Paragraphs[23].Text)
                 {
                     indsBody.Add(syllableSections[0].StartedAt + 23);
                 }
 
-                //с 24 параграфа до конца(53) должно быть идентично
-                for (int i = 24; i <= 53; i++)
+                //обязательно должно быть идентичено
+                if (24 < syllableSections[0].Paragraphs.Count && 24 < modelSections[0].Paragraphs.Count && syllableSections[0].Paragraphs[24].Text != modelSections[0].Paragraphs[24].Text)
                 {
-                    if (syllableSections[0].Paragraphs[i].Text != modelSections[0].Paragraphs[i].Text)
+                    indsBody.Add(syllableSections[0].StartedAt + 24);
+                }
+                //25 может быть заполнен, а может быть не заполнен, поэтому не проверяем
+                //с 26 параграфа до конца(53) должно быть идентично
+                for (int i = 26; i <= 54; i++)
+                {
+                    if ( i < syllableSections[0].Paragraphs.Count && i < modelSections[0].Paragraphs.Count && syllableSections[0].Paragraphs[i].Text != modelSections[0].Paragraphs[i].Text)
                     {
                         indsBody.Add(syllableSections[0].StartedAt + i);
                     }
