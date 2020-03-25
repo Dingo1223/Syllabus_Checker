@@ -27,7 +27,7 @@ namespace SyllabusChecker
             List<int> IndsBody = CheckSyllableSections(ModelSections, SyllableSections);
 
             //Создание результирующего документа
-            //CreateResultDoc(IndsTitle, IndsBody, inputData);
+            CreateResultDoc(IndsTitle, IndsBody, inputData);
         }
 
         //Создание результирующего документа (с подсветкой ошибочных мест)
@@ -38,33 +38,22 @@ namespace SyllabusChecker
         {
             string path = Path.Combine(inputData.ResultFolderPath,
                 Path.GetFileNameWithoutExtension(inputData.SyllablePath) + "_checked.docx");
-            DocX document = DocX.Create(path);
 
             //Переносим титульник
-            document.InsertSection();
             for (int i = 0; i < Syllable.Sections[0].SectionParagraphs.Count; i++)
             {
-                Paragraph p = Syllable.Sections[0].SectionParagraphs[i];
                 if (indsTitle.Contains(i))
-                {
-                    p.Highlight(Highlight.red);
-                }
-                document.Sections[0].InsertParagraph(p);
+                    Syllable.Sections[0].SectionParagraphs[i].Highlight(Highlight.red);
             }
 
             //Переносим остальное
-            document.InsertSection();
             for (int i = 0; i < Syllable.Sections[1].SectionParagraphs.Count; i++)
             {
-                Paragraph p = Syllable.Sections[1].SectionParagraphs[i];
                 if (indsBody.Contains(i))
-                {
-                    p.Highlight(Highlight.red);
-                }
-                document.Sections[1].InsertParagraph(p);
+                    Syllable.Sections[1].SectionParagraphs[i].Highlight(Highlight.red);
             }
 
-            document.Save();
+            Syllable.SaveAs(path);
         }
 
         //Проверка титульника
@@ -160,6 +149,7 @@ namespace SyllabusChecker
                         hasGoals = true;
                         break;
                     }
+                    ind++;
                 }
 
                 if (!hasTargets && (indOfTargets != -1)) indsBody.Add(indOfTargets);
@@ -168,25 +158,15 @@ namespace SyllabusChecker
 
             //Section 2 = 2 Место дисциплины в структуре образовательной программы
             {
-                int j = 1;
-                for (int i = 1; i < modelSections[2].Paragraphs.Count; i++)
-                {
-                    if (modelSections[2].Paragraphs[i].Text == "") continue;
+                //Если не хватает абзацев, подсвечиваем заголовок
+                if (syllableSections[2].Paragraphs.Count < 6)
+                    indsBody.Add(syllableSections[2].StartedAt);
 
-                    //Ищем такой же параграф в syllable
-                    while (modelSections[2].Paragraphs[i].Text != syllableSections[2].Paragraphs[j].Text)
-                    {
-                        j++;
-                        if (j >= syllableSections[2].Paragraphs.Count)
-                        {
-                            //Если какого-то из нужных параграфов в этом разделе нет --
-                            // подсвечивается заголовок раздела
-                            if (!indsBody.Contains(syllableSections[2].StartedAt))
-                                indsBody.Add(syllableSections[2].StartedAt);
-                            break;
-                        }
-                    }
-                    
+                for (int i = 0; i < 6; i++)
+                {
+                    //Сравниваем абзацы, которые должны совпадать с макетом
+                    if (syllableSections[2].Paragraphs[i].Text != modelSections[2].Paragraphs[i].Text)
+                        indsBody.Add(syllableSections[2].StartedAt + i);
                 }
             }
 
