@@ -89,7 +89,53 @@ namespace SyllabusChecker
             List<int> indsBody = new List<int>();
 
             //Section 0 = Рабочая программа рассмотрена и утверждена на заседании кафедры
+            {
+                for (int i = 0; i <= 9; i++) //проверяем первые 10 параграфов, они должны быть идентичны
+                {
+                    if (syllableSections[0].Paragraphs[i].Text != modelSections[0].Paragraphs[i].Text)
+                    {
+                        indsBody.Add(syllableSections[0].StartedAt + i);
+                    }
+                }
 
+                //Обязательно должен быт указан исполнитель, т.е. параграф должен отличаться от того, что в макете
+                if (syllableSections[0].Paragraphs[10].Text == modelSections[0].Paragraphs[10].Text)
+                {
+                    indsBody.Add(syllableSections[0].StartedAt + 10);
+                    //ошибка
+                }
+
+                //обязательно должно быть идентичено
+                if (syllableSections[0].Paragraphs[11].Text != modelSections[0].Paragraphs[11].Text)
+                {
+                    indsBody.Add(syllableSections[0].StartedAt + 11);
+                }
+
+                //12 может быть заполнен, а может быть не заполнен, поэтому не проверяем
+                //с 13 по  22 должны быть идентичны
+                for (int i = 13; i <= 22; i++)
+                {
+                    if (syllableSections[0].Paragraphs[i].Text != modelSections[0].Paragraphs[i].Text)
+                    {
+                        indsBody.Add(syllableSections[0].StartedAt + i);
+                    }
+                }
+
+                //Обязательно должен быт указан исполнитель, т.е. параграф должен отличаться от того, что в макете
+                if (syllableSections[0].Paragraphs[23].Text == modelSections[0].Paragraphs[23].Text)
+                {
+                    indsBody.Add(syllableSections[0].StartedAt + 23);
+                }
+
+                //с 24 параграфа до конца(53) должно быть идентично
+                for (int i = 24; i <= 53; i++)
+                {
+                    if (syllableSections[0].Paragraphs[i].Text != modelSections[0].Paragraphs[i].Text)
+                    {
+                        indsBody.Add(syllableSections[0].StartedAt + i);
+                    }
+                }
+            }
 
             //Section 1 = 1 Цели и задачи освоения дисциплины
             {
