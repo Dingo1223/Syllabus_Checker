@@ -39,19 +39,13 @@ namespace SyllabusChecker
             string path = Path.Combine(inputData.ResultFolderPath,
                 Path.GetFileNameWithoutExtension(inputData.SyllablePath) + "_checked.docx");
 
-            //Переносим титульник
-            for (int i = 0; i < Syllable.Sections[0].SectionParagraphs.Count; i++)
-            {
-                if (indsTitle.Contains(i))
-                    Syllable.Sections[0].SectionParagraphs[i].Highlight(Highlight.red);
-            }
+            //Размечаем титульник
+            foreach (int ind in indsTitle)
+                Syllable.Sections[0].SectionParagraphs[ind].Highlight(Highlight.red);
 
-            //Переносим остальное
-            for (int i = 0; i < Syllable.Sections[1].SectionParagraphs.Count; i++)
-            {
-                if (indsBody.Contains(i))
-                    Syllable.Sections[1].SectionParagraphs[i].Highlight(Highlight.red);
-            }
+            //Размечаем остальное
+            foreach (int ind in indsBody)
+                Syllable.Sections[1].SectionParagraphs[ind].Highlight(Highlight.red);
 
             Syllable.SaveAs(path);
         }
