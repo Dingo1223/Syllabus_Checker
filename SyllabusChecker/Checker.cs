@@ -89,9 +89,6 @@ namespace SyllabusChecker
                     {
                         //Записываем номер параграфа, в котором ошибка
                         indsTitle.Add(j);
-                        //MessageBox.Show("Несоответствие в параграфе №" + i.ToString() +
-                        //    "\nТекст в макете: " + par_model.Text +
-                        //    "\nТекст в проверяемой программе: " + par_syllable.Text);
                     }
                     break;
                 }
@@ -115,12 +112,14 @@ namespace SyllabusChecker
             {
                 int ind = 0;
                 int indOfTargets = -1, indOfGoals = -1;
+
                 //Ищем, где начинаются цели
                 while (!syllableSections[1].Paragraphs[ind].Text.Contains(" освоения дисциплины:") &&
                     (ind < syllableSections[1].Paragraphs.Count))
                 {
                     ind++;
                 }
+
                 if (ind == syllableSections[1].Paragraphs.Count)
                 {
                     //нет пункта "Цели..."
@@ -141,6 +140,7 @@ namespace SyllabusChecker
                     if (!hasTargets && (syllableSections[1].Paragraphs[ind].Text != "")) hasTargets = true;
                     ind++;
                 }
+
                 if (ind == syllableSections[1].Paragraphs.Count)
                 {
                     //нет пункта "Задачи"
@@ -161,6 +161,7 @@ namespace SyllabusChecker
                         break;
                     }
                 }
+
                 if (!hasTargets && (indOfTargets != -1)) indsBody.Add(indOfTargets);
                 if (!hasGoals && (indOfGoals != -1)) indsBody.Add(indOfGoals);
             }
@@ -171,12 +172,15 @@ namespace SyllabusChecker
                 for (int i = 1; i < modelSections[2].Paragraphs.Count; i++)
                 {
                     if (modelSections[2].Paragraphs[i].Text == "") continue;
+
                     //Ищем такой же параграф в syllable
                     while (modelSections[2].Paragraphs[i].Text != syllableSections[2].Paragraphs[j].Text)
                     {
                         j++;
                         if (j >= syllableSections[2].Paragraphs.Count)
                         {
+                            //Если какого-то из нужных параграфов в этом разделе нет --
+                            // подсвечивается заголовок раздела
                             if (!indsBody.Contains(syllableSections[2].StartedAt))
                                 indsBody.Add(syllableSections[2].StartedAt);
                             break;
@@ -202,25 +206,125 @@ namespace SyllabusChecker
 
 
             //Section 8 = 5 Учебно - методическое обеспечение дисциплины
+            {
+                bool hasText = false;
+                for (int i = 1; i < syllableSections[8].Paragraphs.Count; i++)
+                {
+                    if (syllableSections[8].Paragraphs[i].Text != "")
+                    {
+                        hasText = true;
+                        break;
+                    }
+                }
 
+                //Т.к. в данном разделе не должно быть ничего написано,
+                // подсвечиваем заголовок ошибкой, если что-то есть
+                if (hasText) indsBody.Add(syllableSections[8].StartedAt);
+            }
 
             //Section 9 = 5.1 Основная литература
+            {
+                bool hasText = false;
+                for (int i = 1; i < syllableSections[9].Paragraphs.Count; i++)
+                {
+                    if (syllableSections[9].Paragraphs[i].Text != "")
+                    {
+                        hasText = true;
+                        break;
+                    }
+                }
 
+                //Т.к. в данном разделе должно быть написано хоть что-то,
+                // подсвечиваем заголовок ошибкой, если пусто
+                // (не можем проверить конкретное содержимое, too hard)
+                if (!hasText) indsBody.Add(syllableSections[9].StartedAt);
+            }
 
             //Section 10 = 5.2 Дополнительная литература
+            {
+                bool hasText = false;
+                for (int i = 1; i < syllableSections[10].Paragraphs.Count; i++)
+                {
+                    if (syllableSections[10].Paragraphs[i].Text != "")
+                    {
+                        hasText = true;
+                        break;
+                    }
+                }
 
+                //Т.к. в данном разделе должно быть написано хоть что-то,
+                // подсвечиваем заголовок ошибкой, если пусто
+                // (не можем проверить конкретное содержимое, too hard)
+                if (!hasText) indsBody.Add(syllableSections[10].StartedAt);
+            }
 
             //Section 11 = 5.3 Периодические издания
+            {
+                bool hasText = false;
+                for (int i = 1; i < syllableSections[11].Paragraphs.Count; i++)
+                {
+                    if (syllableSections[11].Paragraphs[i].Text != "")
+                    {
+                        hasText = true;
+                        break;
+                    }
+                }
 
+                //Т.к. в данном разделе должно быть написано хоть что-то,
+                // подсвечиваем заголовок ошибкой, если пусто
+                // (не можем проверить конкретное содержимое, too hard)
+                if (!hasText) indsBody.Add(syllableSections[11].StartedAt);
+            }
 
             //Section 12 = 5.4 Интернет - ресурсы
+            {
+                bool hasText = false;
+                for (int i = 1; i < syllableSections[12].Paragraphs.Count; i++)
+                {
+                    if (syllableSections[12].Paragraphs[i].Text != "")
+                    {
+                        hasText = true;
+                        break;
+                    }
+                }
 
+                //Т.к. в данном разделе должно быть написано хоть что-то,
+                // подсвечиваем заголовок ошибкой, если пусто
+                // (не можем проверить конкретное содержимое, too hard)
+                if (!hasText) indsBody.Add(syllableSections[12].StartedAt);
+            }
 
             //Section 13 = 5.5 Программное обеспечение, профессиональные базы данных и информационные справочные системы
+            {
+                bool hasText = false;
+                for (int i = 1; i < syllableSections[13].Paragraphs.Count; i++)
+                {
+                    if (syllableSections[13].Paragraphs[i].Text != "")
+                    {
+                        hasText = true;
+                        break;
+                    }
+                }
 
+                //Т.к. в данном разделе должно быть написано хоть что-то,
+                // подсвечиваем заголовок ошибкой, если пусто
+                // (не можем проверить конкретное содержимое, too hard)
+                if (!hasText) indsBody.Add(syllableSections[13].StartedAt);
+            }
 
             //Section 14 = 6 Материально - техническое обеспечение дисциплины
+            {
+                //Если не хватает абзацев, подсвечиваем заголовок
+                if (syllableSections[14].Paragraphs.Count < 4)
+                    indsBody.Add(syllableSections[14].StartedAt);
 
+                //Сравниваем абзацы, которые должны совпадать с макетом
+                for (int i = 0; i < 4; i++)
+                {
+                    if (syllableSections[14].Paragraphs[i].Text != modelSections[14].Paragraphs[i].Text)
+                        indsBody.Add(syllableSections[14].StartedAt + i);
+                }
+            }
 
             return indsBody;
         }
