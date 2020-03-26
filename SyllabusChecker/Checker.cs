@@ -259,10 +259,128 @@ namespace SyllabusChecker
 
 
             //Section 6 = 4.2 Содержание разделов дисциплины
+            {
+                bool hasText = false;
+                int counter = 0;
+                for (int i = 1; i < syllableSections[6].Paragraphs.Count; i++)
+                {
+                    if (syllableSections[6].Paragraphs[i].Text != "")
+                    {
+                        hasText = true;
 
+                        //Проверяем нумерацию разделов
+                        //Если пропущен раздел -- подсвечиваем вокруг этого сцуко пустого места
+                        if (int.TryParse(syllableSections[6].Paragraphs[i].Text.Split(' ')[0], out int x))
+                        {
+                            if (x != counter + 1)
+                            {
+                                indsBody.Add(syllableSections[6].StartedAt + i - 2);
+                                indsBody.Add(syllableSections[6].StartedAt + i - 1);
+                                indsBody.Add(syllableSections[6].StartedAt + i);
+                            }
+                            counter = x;
+                        }
+                    }
+                }
+
+                //Т.к. в данном разделе должно быть написано хоть что-то,
+                // подсвечиваем заголовок ошибкой, если пусто
+                // (не можем проверить конкретное содержимое, too hard)
+                if (!hasText) indsBody.Add(syllableSections[6].StartedAt);
+            }
 
             //Section 7 = 4.3 Практические занятия(семинары)
+            try
+            {
+                int spaces_in_begin = 1, spaces_in_end = 0, spaces_in_end_model = 0;
+                //Считаем, есть ли пустые строки перед таблицей, чтобы если что их пропустить
+                while (!syllableSections[7].Paragraphs[spaces_in_begin].Text.Contains("№ занятия"))
+                {
+                    spaces_in_begin++;
+                    if (spaces_in_begin >= syllableSections[7].Paragraphs.Count)
+                        throw new Exception();
+                }
 
+                //Считаем, есть ли пустые строки после таблицы, чтобы если что их пропустить
+                int ind = syllableSections[7].Paragraphs.Count - 1;
+                while (syllableSections[7].Paragraphs[ind].Text == "")
+                {
+                    spaces_in_end++;
+                    ind--;
+                }
+
+                //Считаем, есть ли пустые строки после таблицы в макете, чтобы если что их пропустить
+                int ind_model = modelSections[7].Paragraphs.Count - 1;
+                while (modelSections[7].Paragraphs[ind_model].Text == "")
+                {
+                    spaces_in_end_model++;
+                    ind_model--;
+                }
+
+                //Заголовки в таблице должны совпадать с моделью
+                for (int i = spaces_in_begin; i < spaces_in_begin + 4; i++)
+                {
+                    if (syllableSections[7].Paragraphs[i].Text != modelSections[7].Paragraphs[i].Text)
+                        indsBody.Add(syllableSections[7].StartedAt + i);
+                }
+
+                //Проверяем строчки в таблице
+                int ind_lesson = 0, sum = 0;
+                for (int i = spaces_in_begin + 4; i < syllableSections[7].Paragraphs.Count - 4 - spaces_in_end; i += 4)
+                {
+                    bool isCorrect = true;
+
+                    //Проверяем номер занятия
+                    if (int.TryParse(syllableSections[7].Paragraphs[i].Text, out int x))
+                    {
+                        if (x != ind_lesson + 1) isCorrect = false;
+                        ind_lesson = x;
+                    }
+                    else isCorrect = false;
+
+                    //Проверяем номер раздела
+                    if (!int.TryParse(syllableSections[7].Paragraphs[i + 1].Text, out int y))
+                        isCorrect = false;
+
+                    //Проверяем тему
+                    if (syllableSections[7].Paragraphs[i + 2].Text == "") isCorrect = false;
+
+                    //Проверяем количество часов
+                    if (int.TryParse(syllableSections[7].Paragraphs[i + 3].Text, out int s))
+                    {
+                        sum += s;
+                    }
+                    else isCorrect = false;
+
+                    //Если где-то в строке ошибка -- подсвечиваем всю строку
+                    if (!isCorrect)
+                    {
+                        indsBody.Add(syllableSections[7].StartedAt + i);
+                        indsBody.Add(syllableSections[7].StartedAt + i + 1);
+                        indsBody.Add(syllableSections[7].StartedAt + i + 2);
+                        indsBody.Add(syllableSections[7].StartedAt + i + 3);
+                    }
+                }
+
+                if (int.TryParse(syllableSections[7].Paragraphs[syllableSections[7].Paragraphs.Count - 
+                    spaces_in_end - 1].Text, out int sum_syl))
+                {
+                    int sum_model = int.Parse(modelSections[7].Paragraphs[modelSections[7].Paragraphs.Count -
+                        spaces_in_end_model - 1].Text);
+
+                    //Если сумма в РП не совпадает с суммой в макете
+                    // или если итого по таблице не сходится = ошибко
+                    if ((sum_syl != sum_model) || (sum_syl != sum))
+                    {
+                        indsBody.Add(syllableSections[7].StartedAt + syllableSections[7].Paragraphs.Count - spaces_in_end - 1);
+                    }
+                }
+                else indsBody.Add(syllableSections[7].StartedAt + syllableSections[7].Paragraphs.Count - spaces_in_end - 1);
+            }
+            catch
+            {
+                indsBody.Add(syllableSections[7].StartedAt);
+            }
 
             //Section 8 = 5 Учебно - методическое обеспечение дисциплины
             {
