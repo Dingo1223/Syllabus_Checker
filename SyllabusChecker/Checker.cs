@@ -13,6 +13,9 @@ namespace SyllabusChecker
         private DocX Model { get; set; }
         private DocX Syllable { get; set; }
 
+        //Счётчик найденных ошибок
+        public int ErrorsCount;
+
         public Checker(InputData inputData)
         {
             Model = DocX.Load(inputData.ModelPath);
@@ -28,6 +31,7 @@ namespace SyllabusChecker
 
             //Создание результирующего документа
             CreateResultDoc(IndsTitle, IndsBody, inputData);
+            ErrorsCount = IndsTitle.Count + IndsBody.Count;
         }
 
         //Создание результирующего документа (с подсветкой ошибочных мест)
@@ -400,7 +404,14 @@ namespace SyllabusChecker
             List<DocSection> docSections = new List<DocSection>();
             for (int i = 0; i < doc.SectionParagraphs.Count; i++)
             {
-                while (doc.SectionParagraphs[i].Text != namesOfSections[ind]) i++;
+                while (doc.SectionParagraphs[i].Text != namesOfSections[ind])
+                {
+                    i++;
+                    if (i >= doc.SectionParagraphs.Count)
+                    {
+                        throw new Exception("Критическая ошибка: отсутствует раздел рабочей программы");
+                    }
+                }
                 ind++;
 
                 //Проверяем, достигли ли последнего раздела

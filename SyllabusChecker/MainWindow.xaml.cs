@@ -85,11 +85,17 @@ namespace SyllabusChecker
             {
                 checker = new Checker(InputData);
                 MessageBox.Show("Готово, результат сохранён в: " + InputData.ResultFolderPath +
-                    Path.GetFileNameWithoutExtension(InputData.SyllablePath) + "_checked.docx");
+                    Path.GetFileNameWithoutExtension(InputData.SyllablePath) + "_checked.docx \n" + 
+                    "Найдено ошибок: " + (checker.ErrorsCount).ToString());
             }
             catch (IOException ex)
             {
                 MessageBox.Show(ex.Message + "\nЗакройте все приложения, использующие данный файл, чтобы продолжить.");
+                return;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
                 return;
             }
             //checker.checkParagraphEquality();
