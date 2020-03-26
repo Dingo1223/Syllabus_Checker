@@ -251,7 +251,161 @@ namespace SyllabusChecker
 
             //Section 3 = 3 Требования к результатам обучения по дисциплине
 
-
+            {
+                int j = 0;
+                for (int i = 0; i < syllableSections[3].Paragraphs.Count - 1; i++)
+                {
+                    int pId = 0;
+                    if (i > 0 && modelSections[3].Paragraphs[i - 1].FollowingTables != null)
+                    {
+                        pId = i - 1;
+                        if (modelSections[3].Paragraphs[pId].FollowingTables[0].ColumnCount == 2)//If the table has 2 columns
+                        {
+                            for (int y = 0; y < modelSections[3].Paragraphs[pId].FollowingTables[0].Rows.Count; y++)//бегаем по строкам
+                            {
+                                for (int l = 0; l < modelSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells.Count; l++)//бегаем по ячейкам в строке
+                                {
+                                    if (y == 0)
+                                    {
+                                        for (int g = 0; g < modelSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs.Count; g++)
+                                        {
+                                            if (modelSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs[g].Text != syllableSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs[g].Text)
+                                            { indsBody.Add(syllableSections[3].StartedAt + i); }
+                                            i++;
+                                        }
+                                    }
+                                    else if (syllableSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Width > 300)
+                                    {
+                                        int n = 0;
+                                        for (int g = 0; g < syllableSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs.Count; g++)
+                                        {
+                                            if (syllableSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs[g].Text.Contains("Знать:")
+                                                || syllableSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs[g].Text.Contains("Уметь:")
+                                                || syllableSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs[g].Text.Contains("Владеть:"))
+                                            { n++; }
+                                            i++;
+                                        }
+                                        if (n != 3)
+                                        {
+                                            for (int g = 0; g < syllableSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs.Count; g++)
+                                            {
+                                                { indsBody.Add(syllableSections[3].StartedAt + i - syllableSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs.Count + g); }
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        int maxSylMod = Math.Max(modelSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs.Count, syllableSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs.Count);
+                                        for (int m = 0; m < maxSylMod; m++)
+                                        {
+                                            for (int g = 0; g < modelSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs.Count; g++)
+                                            {
+                                                if (modelSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs[g].Text != syllableSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs[g].Text)
+                                                { i++; indsBody.Add(syllableSections[3].StartedAt + i); m++; }
+                                                while (m < maxSylMod - 1)
+                                                {
+                                                    i++;
+                                                    indsBody.Add(syllableSections[3].StartedAt + i);
+                                                    m++;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        else if (modelSections[3].Paragraphs[pId].FollowingTables[0].ColumnCount == 3)//If the table has 3 columns
+                        {
+                            for (int y = 0; y < modelSections[3].Paragraphs[pId].FollowingTables[0].Rows.Count; y++)//бегаем по строкам
+                            {
+                                for (int l = 0; l < modelSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells.Count; l++)//бегаем по ячейкам в строке
+                                {
+                                    if (y == 0)
+                                    {
+                                        for (int g = 0; g < modelSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs.Count; g++)
+                                        {
+                                            if (modelSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs[g].Text != syllableSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs[g].Text)
+                                            { indsBody.Add(syllableSections[3].StartedAt + i); }
+                                            i++;
+                                        }
+                                    }
+                                    else if (syllableSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Width < 150)
+                                    {
+                                        int n = 0;
+                                        for (int g = 0; g < syllableSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs.Count; g++)
+                                        {
+                                            if (syllableSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs[g].Text.Contains("Знать:")
+                                                || syllableSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs[g].Text.Contains("Уметь:")
+                                                || syllableSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs[g].Text.Contains("Владеть:"))
+                                            { n++; }
+                                            i++;
+                                        }
+                                        if (n != 3)
+                                        {
+                                            for (int g = 0; g < syllableSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs.Count; g++)
+                                            {
+                                                indsBody.Add(syllableSections[3].StartedAt + i - syllableSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs.Count + g);
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if (modelSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs.Count > syllableSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs.Count)
+                                        {
+                                            for (int g = 0; g < syllableSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs.Count; g++)
+                                            {
+                                                
+                                                indsBody.Add(syllableSections[3].StartedAt + i);
+                                                i++;
+                                            }
+                                        }
+                                        else if (modelSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs.Count < syllableSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs.Count)
+                                        {
+                                            for (int g = 0; g < modelSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs.Count; g++)
+                                            {
+                                                if (modelSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs[g].Text != syllableSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs[g].Text)
+                                                {  indsBody.Add(syllableSections[3].StartedAt + i); i++; }
+                                            }
+                                            int m = 0;
+                                            while (m < syllableSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs.Count - modelSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs.Count)
+                                            {  indsBody.Add(syllableSections[3].StartedAt + i); m++; i++; }
+                                        }
+                                        else
+                                        {
+                                            for (int g = 0; g < modelSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs.Count; g++)
+                                            {
+                                                if (modelSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs[g].Text != syllableSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs[g].Text)
+                                                {  indsBody.Add(syllableSections[3].StartedAt + i); i++; }
+                                                else i++;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        bool b = false;
+                        while (b == false)
+                        {
+                            if (syllableSections[3].Paragraphs[i + 1].FollowingTables != null)
+                            {
+                                b = true;
+                            }
+                            else
+                            {
+                                if (syllableSections[3].Paragraphs[i + 1].Text != modelSections[3].Paragraphs[i + 1].Text)
+                                {
+                                    indsBody.Add(syllableSections[3].StartedAt + i + 1);
+                                }
+                            }
+                            i++;
+                        }
+                    }
+                    j++;
+                }
+            }
             //Section 4 = 4 Структура и содержание дисциплины
 
 
@@ -400,7 +554,7 @@ namespace SyllabusChecker
             }
 
             //Section 9 = 5.1 Основная литература
-            {
+           /* {
                 bool hasText = false;
                 for (int i = 1; i < syllableSections[9].Paragraphs.Count; i++)
                 {
@@ -501,7 +655,7 @@ namespace SyllabusChecker
                     if (syllableSections[14].Paragraphs[i].Text != modelSections[14].Paragraphs[i].Text)
                         indsBody.Add(syllableSections[14].StartedAt + i);
                 }
-            }
+            }*/
 
             return indsBody;
         }
