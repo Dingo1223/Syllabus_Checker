@@ -301,11 +301,12 @@ namespace SyllabusChecker
                                             for (int g = 0; g < modelSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs.Count; g++)
                                             {
                                                 if (modelSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs[g].Text != syllableSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs[g].Text)
-                                                { i++; indsBody.Add(syllableSections[3].StartedAt + i); m++; }
+                                                {  indsBody.Add(syllableSections[3].StartedAt + i); m++; i++; }
                                                 while (m < maxSylMod - 1)
                                                 {
+                                                   
+                                                    indsBody.Add(syllableSections[3].StartedAt + i - 1);
                                                     i++;
-                                                    indsBody.Add(syllableSections[3].StartedAt + i);
                                                     m++;
                                                 }
                                             }
