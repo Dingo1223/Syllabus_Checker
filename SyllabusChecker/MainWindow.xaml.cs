@@ -84,9 +84,9 @@ namespace SyllabusChecker
             try
             {
                 checker = new Checker(InputData);
-                MessageBox.Show("Готово, результат сохранён в: " + InputData.ResultFolderPath +
-                    Path.GetFileNameWithoutExtension(InputData.SyllablePath) + "_checked.docx \n" + 
-                    "Найдено ошибок: " + (checker.ErrorsCount).ToString());
+                ResultWindow rw = new ResultWindow(InputData.ResultFolderPath + "\\" +
+                    Path.GetFileNameWithoutExtension(InputData.SyllablePath) + @"_checked.docx", checker.ErrorsCount);
+                rw.ShowDialog();
             }
             catch (IOException ex)
             {
