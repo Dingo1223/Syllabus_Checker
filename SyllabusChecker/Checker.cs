@@ -45,13 +45,15 @@ namespace SyllabusChecker
 
             //Размечаем титульник
             foreach (int ind in indsTitle)
-                Syllable.Sections[0].SectionParagraphs[ind].Highlight(Highlight.red);
+                Syllable.Sections[0].SectionParagraphs[ind].Highlight(Highlight.yellow);
 
             //Размечаем остальное
             foreach (int ind in indsBody)
-                Syllable.Sections[1].SectionParagraphs[ind].Highlight(Highlight.red);
+                Syllable.Sections[1].SectionParagraphs[ind].Highlight(Highlight.yellow);
 
             Syllable.SaveAs(path);
+
+            DocComments.AddComments(indsTitle, indsBody, Syllable.Sections[0].SectionParagraphs.Count, path);
         }
 
         //Проверка титульника
