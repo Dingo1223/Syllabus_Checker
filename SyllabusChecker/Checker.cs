@@ -301,11 +301,12 @@ namespace SyllabusChecker
                                             for (int g = 0; g < modelSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs.Count; g++)
                                             {
                                                 if (modelSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs[g].Text != syllableSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs[g].Text)
-                                                { i++; indsBody.Add(syllableSections[3].StartedAt + i); m++; }
+                                                {  indsBody.Add(syllableSections[3].StartedAt + i); m++; i++; }
                                                 while (m < maxSylMod - 1)
                                                 {
+                                                   
+                                                    indsBody.Add(syllableSections[3].StartedAt + i - 1);
                                                     i++;
-                                                    indsBody.Add(syllableSections[3].StartedAt + i);
                                                     m++;
                                                 }
                                             }
@@ -407,7 +408,21 @@ namespace SyllabusChecker
                 }
             }
             //Section 4 = 4 Структура и содержание дисциплины
+            {
+                bool hasText = false;
+                for (int i = 1; i < syllableSections[4].Paragraphs.Count; i++)
+                {
+                    if (syllableSections[4].Paragraphs[i].Text != "")
+                    {
+                        hasText = true;
+                        break;
+                    }
+                }
 
+                //Т.к. в данном разделе не должно быть ничего написано,
+                // подсвечиваем заголовок ошибкой, если что-то есть
+                if (hasText) indsBody.Add(syllableSections[4].StartedAt);
+            }
 
             //Section 5 = 4.1 Структура дисциплины
 
@@ -554,7 +569,7 @@ namespace SyllabusChecker
             }
 
             //Section 9 = 5.1 Основная литература
-           /* {
+            {
                 bool hasText = false;
                 for (int i = 1; i < syllableSections[9].Paragraphs.Count; i++)
                 {
@@ -655,7 +670,7 @@ namespace SyllabusChecker
                     if (syllableSections[14].Paragraphs[i].Text != modelSections[14].Paragraphs[i].Text)
                         indsBody.Add(syllableSections[14].StartedAt + i);
                 }
-            }*/
+            }
 
             return indsBody;
         }
