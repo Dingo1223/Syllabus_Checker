@@ -20,14 +20,14 @@ namespace SyllabusChecker
         {
             Model = DocX.Load(inputData.ModelPath);
             Syllable = DocX.Load(inputData.SyllablePath);
-            List<int> IndsTitle = CheckTitlePage();
+            Dictionary<int, string> IndsTitle = CheckTitlePage();
 
             //Получаем разбитые на секции модель и РП
             List<DocSection> ModelSections = GetDocSections(Model.Sections[1]);
             List<DocSection> SyllableSections = GetDocSections(Syllable.Sections[1]);
 
             //Дальше надо их проверять
-            List<int> IndsBody = CheckSyllableSections(ModelSections, SyllableSections);
+            Dictionary<int, string> IndsBody = CheckSyllableSections(ModelSections, SyllableSections);
 
             //Создание результирующего документа
             CreateResultDoc(IndsTitle, IndsBody, inputData);
@@ -38,28 +38,33 @@ namespace SyllabusChecker
         //Строится на основе Syllable
         //Параметр indsTitle -- индексы параграфов с ошибками в титульнике
         //Параметр indsBody -- индексы параграфов с ошибками в остальном документе
-        public void CreateResultDoc(List<int> indsTitle, List<int> indsBody, InputData inputData)
+        public void CreateResultDoc(Dictionary<int, string> errorsTitle, 
+            Dictionary<int, string> errorsBody, InputData inputData)
         {
             string path = Path.Combine(inputData.ResultFolderPath,
                 Path.GetFileNameWithoutExtension(inputData.SyllablePath) + "_checked.docx");
 
             //Размечаем титульник
-            foreach (int ind in indsTitle)
+            foreach (int ind in errorsTitle.Keys)
+            {
                 Syllable.Sections[0].SectionParagraphs[ind].Highlight(Highlight.yellow);
+            }
 
             //Размечаем остальное
-            foreach (int ind in indsBody)
+            foreach (int ind in errorsBody.Keys)
+            {
                 Syllable.Sections[1].SectionParagraphs[ind].Highlight(Highlight.yellow);
+            }
 
             Syllable.SaveAs(path);
 
-            DocComments.AddComments(indsTitle, indsBody, Syllable.Sections[0].SectionParagraphs.Count, path);
+            DocComments.AddComments(errorsTitle, errorsBody, Syllable.Sections[0].SectionParagraphs.Count, path);
         }
 
         //Проверка титульника
-        public List<int> CheckTitlePage()
+        public Dictionary<int, string> CheckTitlePage()
         {
-            List<int> indsTitle = new List<int>();
+            Dictionary<int, string> errorsTitle = new Dictionary<int, string>();
             Section title_model = Model.Sections[0];
             Section title_syllable = Syllable.Sections[0];
             int ind = 0;
@@ -67,83 +72,92 @@ namespace SyllabusChecker
             for (int i = 0; i < title_model.SectionParagraphs.Count; i++)
             {
                 Paragraph par_model = title_model.SectionParagraphs[i];
-                if (par_model.Text == "") continue;
+                if (par_model.Text == "")
+                {
+                    continue;
+                }
+
                 for (int j = ind; j < title_model.SectionParagraphs.Count; j++)
                 {
                     ind++;
                     Paragraph par_syllable = title_syllable.SectionParagraphs[j];
-                    if (par_syllable.Text == "") continue;
+                    if (par_syllable.Text == "")
+                    {
+                        continue;
+                    }
 
                     if (par_model.Text != par_syllable.Text)
                     {
                         //Записываем номер параграфа, в котором ошибка
-                        indsTitle.Add(j);
+                        errorsTitle.Add(j, "Несовпадение с макетом, должно быть: " + par_model.Text);
                     }
                     break;
                 }
             }
 
-            return indsTitle;
+            return errorsTitle;
         }
 
         //Проверка рабочей программы, по разделам
-        public List<int> CheckSyllableSections(List<DocSection> modelSections, List<DocSection> syllableSections)
+        public Dictionary<int, string> CheckSyllableSections(List<DocSection> modelSections, List<DocSection> syllableSections)
         {
             // !!!!!
-            // СЮДА ЗАПИСЫВАЕМ ТОЧНЫЕ ИНДЕКСЫ ПАРАГРАФОВ ИЗ Syllable, В КОТОРЫХ ОШИБКА
+            // Для описания ошибки в документе:
+            // ФОРМАТ: (индекс_параграфа_в_Syllable; описание_ошибки)
             // !!!!!
-            List<int> indsBody = new List<int>();
+            Dictionary<int, string> errorsBody = new Dictionary<int, string>();
+
             //Section 0 = Рабочая программа рассмотрена и утверждена на заседании кафедры
             {
-              /*  int CurrentIndexParagraphSyllable = 0, CurrentIndexParagraphModel = 0;
-                for(int i = 0; i < syllableSections[0].Paragraphs.Count; i++)
-                {
-                    while(syllableSections[0].Paragraphs[i].Text != modelSections[0].Paragraphs[CurrentIndexParagraphModel].Text)
-                    {
-                    }
-                    if(syllableSections[0].Paragraphs[i].Text != "" || (syllableSections[0].Paragraphs[i].Text == "" && modelSections[0].Paragraphs[i].Text == ""))
-                    {
-                    }
-                    if(syllableSections[0].Paragraphs[i].Text == modelSections[0].Paragraphs[CurrentIndexParagraphModel].Text)
-                    {
-                        CurrentIndexParagraphModel++;
-                    }
-                    else
-                    {
-                        while (CurrentIndexParagraphModel < modelSections[0].Paragraphs.Count && syllableSections[0].Paragraphs[i].Text != modelSections[0].Paragraphs[CurrentIndexParagraphModel].Text);
-                        {
-                            CurrentIndexParagraphModel++;
-                        }
-                        if(CurrentIndexParagraphModel != modelSections[0].Paragraphs.Count)
-                        {
-                            CurrentIndexParagraphModel++;
-                        }
-                        else
-                        {
-                            //ошибка
-                        }
-                   }
-                }
-                */
+                /*  int CurrentIndexParagraphSyllable = 0, CurrentIndexParagraphModel = 0;
+                  for(int i = 0; i < syllableSections[0].Paragraphs.Count; i++)
+                  {
+                      while(syllableSections[0].Paragraphs[i].Text != modelSections[0].Paragraphs[CurrentIndexParagraphModel].Text)
+                      {
+                      }
+                      if(syllableSections[0].Paragraphs[i].Text != "" || (syllableSections[0].Paragraphs[i].Text == "" && modelSections[0].Paragraphs[i].Text == ""))
+                      {
+                      }
+                      if(syllableSections[0].Paragraphs[i].Text == modelSections[0].Paragraphs[CurrentIndexParagraphModel].Text)
+                      {
+                          CurrentIndexParagraphModel++;
+                      }
+                      else
+                      {
+                          while (CurrentIndexParagraphModel < modelSections[0].Paragraphs.Count && syllableSections[0].Paragraphs[i].Text != modelSections[0].Paragraphs[CurrentIndexParagraphModel].Text);
+                          {
+                              CurrentIndexParagraphModel++;
+                          }
+                          if(CurrentIndexParagraphModel != modelSections[0].Paragraphs.Count)
+                          {
+                              CurrentIndexParagraphModel++;
+                          }
+                          else
+                          {
+                              //ошибка
+                          }
+                     }
+                  }
+                  */
                 for (int i = 0; i <= 9; i++) //проверяем первые 10 параграфов, они должны быть идентичны
                 {
                     if (i < syllableSections[0].Paragraphs.Count && i < modelSections[0].Paragraphs.Count && syllableSections[0].Paragraphs[i].Text != modelSections[0].Paragraphs[i].Text)
                     {
-                        indsBody.Add(syllableSections[0].StartedAt + i);
+                        errorsBody.Add(syllableSections[0].StartedAt + i, "Несовпадение с макетом, должно быть: " + modelSections[0].Paragraphs[i].Text);
                     }
                 }
 
                 //Обязательно должен быт указан исполнитель, т.е. параграф должен отличаться от того, что в макете
                 if (10 < syllableSections[0].Paragraphs.Count && 10 < modelSections[0].Paragraphs.Count && syllableSections[0].Paragraphs[10].Text == modelSections[0].Paragraphs[10].Text)
                 {
-                    indsBody.Add(syllableSections[0].StartedAt + 10);
+                    errorsBody.Add(syllableSections[0].StartedAt + 10, "Не указан исполнитель");
                     //ошибка
                 }
 
                 //обязательно должно быть идентичено
                 if (11 < syllableSections[0].Paragraphs.Count && 11 < modelSections[0].Paragraphs.Count && syllableSections[0].Paragraphs[11].Text != modelSections[0].Paragraphs[11].Text)
                 {
-                    indsBody.Add(syllableSections[0].StartedAt + 11);
+                    errorsBody.Add(syllableSections[0].StartedAt + 11, "Несовпадение с макетом, должно быть: " + modelSections[0].Paragraphs[11].Text);
                 }
 
                 //12 может быть заполнен, а может быть не заполнен, поэтому не проверяем
@@ -152,28 +166,28 @@ namespace SyllabusChecker
                 {
                     if (i < syllableSections[0].Paragraphs.Count && i < modelSections[0].Paragraphs.Count && syllableSections[0].Paragraphs[i].Text != modelSections[0].Paragraphs[i].Text)
                     {
-                        indsBody.Add(syllableSections[0].StartedAt + i);
+                        errorsBody.Add(syllableSections[0].StartedAt + i, "Несовпадение с макетом, должно быть: " + modelSections[0].Paragraphs[i].Text);
                     }
                 }
 
                 //Обязательно должен быт указан исполнитель, т.е. параграф должен отличаться от того, что в макете
                 if (23 < syllableSections[0].Paragraphs.Count && 23 < modelSections[0].Paragraphs.Count && syllableSections[0].Paragraphs[23].Text == modelSections[0].Paragraphs[23].Text)
                 {
-                    indsBody.Add(syllableSections[0].StartedAt + 23);
+                    errorsBody.Add(syllableSections[0].StartedAt + 23, "Не указан исполнитель");
                 }
 
                 //обязательно должно быть идентичено
                 if (24 < syllableSections[0].Paragraphs.Count && 24 < modelSections[0].Paragraphs.Count && syllableSections[0].Paragraphs[24].Text != modelSections[0].Paragraphs[24].Text)
                 {
-                    indsBody.Add(syllableSections[0].StartedAt + 24);
+                    errorsBody.Add(syllableSections[0].StartedAt + 24, "Несовпадение с макетом, должно быть: " + modelSections[0].Paragraphs[24].Text);
                 }
                 //25 может быть заполнен, а может быть не заполнен, поэтому не проверяем
                 //с 26 параграфа до конца(53) должно быть идентично
                 for (int i = 26; i <= 54; i++)
                 {
-                    if ( i < syllableSections[0].Paragraphs.Count && i < modelSections[0].Paragraphs.Count && syllableSections[0].Paragraphs[i].Text != modelSections[0].Paragraphs[i].Text)
+                    if (i < syllableSections[0].Paragraphs.Count && i < modelSections[0].Paragraphs.Count && syllableSections[0].Paragraphs[i].Text != modelSections[0].Paragraphs[i].Text)
                     {
-                        indsBody.Add(syllableSections[0].StartedAt + i);
+                        errorsBody.Add(syllableSections[0].StartedAt + i, "Несовпадение с макетом, должно быть: " + modelSections[0].Paragraphs[i].Text);
                     }
                 }
             }
@@ -193,7 +207,7 @@ namespace SyllabusChecker
                 if (ind == syllableSections[1].Paragraphs.Count)
                 {
                     //нет пункта "Цели..."
-                    indsBody.Add(syllableSections[1].StartedAt);
+                    errorsBody.Add(syllableSections[1].StartedAt, "Нет пункта \"Цели освоения дисциплины\"");
                 }
                 else
                 {
@@ -207,14 +221,18 @@ namespace SyllabusChecker
                 while ((ind < syllableSections[1].Paragraphs.Count) &&
                     !syllableSections[1].Paragraphs[ind].Text.Contains("Задачи:"))
                 {
-                    if (!hasTargets && (syllableSections[1].Paragraphs[ind].Text != "")) hasTargets = true;
+                    if (!hasTargets && (syllableSections[1].Paragraphs[ind].Text != ""))
+                    {
+                        hasTargets = true;
+                    }
+
                     ind++;
                 }
 
                 if (ind == syllableSections[1].Paragraphs.Count)
                 {
                     //нет пункта "Задачи"
-                    indsBody.Add(syllableSections[1].StartedAt);
+                    errorsBody.Add(syllableSections[1].StartedAt, "Нет пункта \"Задачи\"");
                 }
                 else
                 {
@@ -233,26 +251,36 @@ namespace SyllabusChecker
                     ind++;
                 }
 
-                if (!hasTargets && (indOfTargets != -1)) indsBody.Add(indOfTargets);
-                if (!hasGoals && (indOfGoals != -1)) indsBody.Add(indOfGoals);
+                if (!hasTargets && (indOfTargets != -1))
+                {
+                    errorsBody.Add(indOfTargets, "Не заполнен пункт \"Цели освоения дисциплины\"");
+                }
+
+                if (!hasGoals && (indOfGoals != -1))
+                {
+                    errorsBody.Add(indOfGoals, "Не заполнен пункт \"Задачи\"");
+                }
             }
 
             //Section 2 = 2 Место дисциплины в структуре образовательной программы
             {
                 //Если не хватает абзацев, подсвечиваем заголовок
                 if (syllableSections[2].Paragraphs.Count < 6)
-                    indsBody.Add(syllableSections[2].StartedAt);
+                {
+                    errorsBody.Add(syllableSections[2].StartedAt, "Раздел не заполнен полностью");
+                }
 
                 for (int i = 0; i < 6; i++)
                 {
                     //Сравниваем абзацы, которые должны совпадать с макетом
                     if (syllableSections[2].Paragraphs[i].Text != modelSections[2].Paragraphs[i].Text)
-                        indsBody.Add(syllableSections[2].StartedAt + i);
+                    {
+                        errorsBody.Add(syllableSections[2].StartedAt + i, "Несовпадение с макетом, должно быть: " + modelSections[2].Paragraphs[i].Text);
+                    }
                 }
             }
 
             //Section 3 = 3 Требования к результатам обучения по дисциплине
-
             {
                 int j = 0;
                 for (int i = 0; i < syllableSections[3].Paragraphs.Count - 1; i++)
@@ -272,7 +300,7 @@ namespace SyllabusChecker
                                         for (int g = 0; g < modelSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs.Count; g++)
                                         {
                                             if (modelSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs[g].Text != syllableSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs[g].Text)
-                                            { indsBody.Add(syllableSections[3].StartedAt + i); }
+                                            { errorsBody.Add(syllableSections[3].StartedAt + i, "Description placeholder"); }
                                             i++;
                                         }
                                     }
@@ -291,7 +319,7 @@ namespace SyllabusChecker
                                         {
                                             for (int g = 0; g < syllableSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs.Count; g++)
                                             {
-                                                { indsBody.Add(syllableSections[3].StartedAt + i - syllableSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs.Count + g); }
+                                                { errorsBody.Add(syllableSections[3].StartedAt + i - syllableSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs.Count + g, "Description placeholder"); }
                                             }
                                         }
                                     }
@@ -303,11 +331,11 @@ namespace SyllabusChecker
                                             for (int g = 0; g < modelSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs.Count; g++)
                                             {
                                                 if (modelSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs[g].Text != syllableSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs[g].Text)
-                                                {  indsBody.Add(syllableSections[3].StartedAt + i); m++; i++; }
+                                                { errorsBody.Add(syllableSections[3].StartedAt + i, "Description placeholder"); m++; i++; }
                                                 while (m < maxSylMod - 1)
                                                 {
-                                                   
-                                                    indsBody.Add(syllableSections[3].StartedAt + i - 1);
+
+                                                    errorsBody.Add(syllableSections[3].StartedAt + i - 1, "Description placeholder");
                                                     i++;
                                                     m++;
                                                 }
@@ -328,7 +356,7 @@ namespace SyllabusChecker
                                         for (int g = 0; g < modelSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs.Count; g++)
                                         {
                                             if (modelSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs[g].Text != syllableSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs[g].Text)
-                                            { indsBody.Add(syllableSections[3].StartedAt + i); }
+                                            { errorsBody.Add(syllableSections[3].StartedAt + i, "Description placeholder"); }
                                             i++;
                                         }
                                     }
@@ -347,7 +375,7 @@ namespace SyllabusChecker
                                         {
                                             for (int g = 0; g < syllableSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs.Count; g++)
                                             {
-                                                indsBody.Add(syllableSections[3].StartedAt + i - syllableSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs.Count + g);
+                                                errorsBody.Add(syllableSections[3].StartedAt + i - syllableSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs.Count + g, "Description placeholder");
                                             }
                                         }
                                     }
@@ -357,8 +385,8 @@ namespace SyllabusChecker
                                         {
                                             for (int g = 0; g < syllableSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs.Count; g++)
                                             {
-                                                
-                                                indsBody.Add(syllableSections[3].StartedAt + i);
+
+                                                errorsBody.Add(syllableSections[3].StartedAt + i, "Description placeholder");
                                                 i++;
                                             }
                                         }
@@ -367,19 +395,22 @@ namespace SyllabusChecker
                                             for (int g = 0; g < modelSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs.Count; g++)
                                             {
                                                 if (modelSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs[g].Text != syllableSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs[g].Text)
-                                                {  indsBody.Add(syllableSections[3].StartedAt + i); i++; }
+                                                { errorsBody.Add(syllableSections[3].StartedAt + i, "Description placeholder"); i++; }
                                             }
                                             int m = 0;
                                             while (m < syllableSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs.Count - modelSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs.Count)
-                                            {  indsBody.Add(syllableSections[3].StartedAt + i); m++; i++; }
+                                            { errorsBody.Add(syllableSections[3].StartedAt + i, "Description placeholder"); m++; i++; }
                                         }
                                         else
                                         {
                                             for (int g = 0; g < modelSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs.Count; g++)
                                             {
                                                 if (modelSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs[g].Text != syllableSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs[g].Text)
-                                                {  indsBody.Add(syllableSections[3].StartedAt + i); i++; }
-                                                else i++;
+                                                { errorsBody.Add(syllableSections[3].StartedAt + i, "Description placeholder"); i++; }
+                                                else
+                                                {
+                                                    i++;
+                                                }
                                             }
                                         }
                                     }
@@ -400,7 +431,7 @@ namespace SyllabusChecker
                             {
                                 if (syllableSections[3].Paragraphs[i + 1].Text != modelSections[3].Paragraphs[i + 1].Text)
                                 {
-                                    indsBody.Add(syllableSections[3].StartedAt + i + 1);
+                                    errorsBody.Add(syllableSections[3].StartedAt + i + 1, "Description placeholder");
                                 }
                             }
                             i++;
@@ -409,21 +440,12 @@ namespace SyllabusChecker
                     j++;
                 }
             }
-            //Section 4 = 4 Структура и содержание дисциплины
-            {
-                bool hasText = false;
-                for (int i = 1; i < syllableSections[4].Paragraphs.Count; i++)
-                {
-                    if (syllableSections[4].Paragraphs[i].Text != "")
-                    {
-                        hasText = true;
-                        break;
-                    }
-                }
 
-                //Т.к. в данном разделе не должно быть ничего написано,
-                // подсвечиваем заголовок ошибкой, если что-то есть
-                if (hasText) indsBody.Add(syllableSections[4].StartedAt);
+            //Section 4 = 4 Структура и содержание дисциплины
+            // Должна быть пуста
+            if (IsSectionHasContent(syllableSections[4]))
+            {
+                errorsBody.Add(syllableSections[4].StartedAt, "В секции не должно быть содержимого");
             }
 
             //Section 5 = 4.1 Структура дисциплины
@@ -440,14 +462,12 @@ namespace SyllabusChecker
                         hasText = true;
 
                         //Проверяем нумерацию разделов
-                        //Если пропущен раздел -- подсвечиваем вокруг этого сцуко пустого места
+                        //Если пропущен раздел -- подсвечиваем вокруг этого пустого места
                         if (int.TryParse(syllableSections[6].Paragraphs[i].Text.Split(' ')[0], out int x))
                         {
                             if (x != counter + 1)
                             {
-                                indsBody.Add(syllableSections[6].StartedAt + i - 2);
-                                indsBody.Add(syllableSections[6].StartedAt + i - 1);
-                                indsBody.Add(syllableSections[6].StartedAt + i);
+                                errorsBody.Add(syllableSections[6].StartedAt + i, "Нарушена нумерация разделов");
                             }
                             counter = x;
                         }
@@ -457,7 +477,10 @@ namespace SyllabusChecker
                 //Т.к. в данном разделе должно быть написано хоть что-то,
                 // подсвечиваем заголовок ошибкой, если пусто
                 // (не можем проверить конкретное содержимое, too hard)
-                if (!hasText) indsBody.Add(syllableSections[6].StartedAt);
+                if (!hasText)
+                {
+                    errorsBody.Add(syllableSections[6].StartedAt, "Секция не заполнена");
+                }
             }
 
             //Section 7 = 4.3 Практические занятия(семинары)
@@ -469,7 +492,9 @@ namespace SyllabusChecker
                 {
                     spaces_in_begin++;
                     if (spaces_in_begin >= syllableSections[7].Paragraphs.Count)
+                    {
                         throw new Exception();
+                    }
                 }
 
                 //Считаем, есть ли пустые строки после таблицы, чтобы если что их пропустить
@@ -492,7 +517,10 @@ namespace SyllabusChecker
                 for (int i = spaces_in_begin; i < spaces_in_begin + 4; i++)
                 {
                     if (syllableSections[7].Paragraphs[i].Text != modelSections[7].Paragraphs[i].Text)
-                        indsBody.Add(syllableSections[7].StartedAt + i);
+                    {
+                        errorsBody.Add(syllableSections[7].StartedAt + i, 
+                            "Несовпадение с макетом, должно быть: " + modelSections[7].Paragraphs[i].Text);
+                    }
                 }
 
                 //Проверяем строчки в таблице
@@ -504,177 +532,152 @@ namespace SyllabusChecker
                     //Проверяем номер занятия
                     if (int.TryParse(syllableSections[7].Paragraphs[i].Text, out int x))
                     {
-                        if (x != ind_lesson + 1) isCorrect = false;
+                        if (x != ind_lesson + 1)
+                        {
+                            isCorrect = false;
+                        }
+
                         ind_lesson = x;
                     }
-                    else isCorrect = false;
+                    else
+                    {
+                        isCorrect = false;
+                    }
 
                     //Проверяем номер раздела
                     if (!int.TryParse(syllableSections[7].Paragraphs[i + 1].Text, out int y))
+                    {
                         isCorrect = false;
+                    }
 
                     //Проверяем тему
-                    if (syllableSections[7].Paragraphs[i + 2].Text == "") isCorrect = false;
+                    if (syllableSections[7].Paragraphs[i + 2].Text == "")
+                    {
+                        isCorrect = false;
+                    }
 
                     //Проверяем количество часов
                     if (int.TryParse(syllableSections[7].Paragraphs[i + 3].Text, out int s))
                     {
                         sum += s;
                     }
-                    else isCorrect = false;
+                    else
+                    {
+                        isCorrect = false;
+                    }
 
                     //Если где-то в строке ошибка -- подсвечиваем всю строку
                     if (!isCorrect)
                     {
-                        indsBody.Add(syllableSections[7].StartedAt + i);
-                        indsBody.Add(syllableSections[7].StartedAt + i + 1);
-                        indsBody.Add(syllableSections[7].StartedAt + i + 2);
-                        indsBody.Add(syllableSections[7].StartedAt + i + 3);
+                        errorsBody.Add(syllableSections[7].StartedAt + i + 3, "Ошибка в данной строке таблицы");
                     }
                 }
 
-                if (int.TryParse(syllableSections[7].Paragraphs[syllableSections[7].Paragraphs.Count - 
+                if (int.TryParse(syllableSections[7].Paragraphs[syllableSections[7].Paragraphs.Count -
                     spaces_in_end - 1].Text, out int sum_syl))
                 {
                     int sum_model = int.Parse(modelSections[7].Paragraphs[modelSections[7].Paragraphs.Count -
                         spaces_in_end_model - 1].Text);
 
                     //Если сумма в РП не совпадает с суммой в макете
-                    // или если итого по таблице не сходится = ошибко
+                    // или если итого по таблице не сходится = ошибка
                     if ((sum_syl != sum_model) || (sum_syl != sum))
                     {
-                        indsBody.Add(syllableSections[7].StartedAt + syllableSections[7].Paragraphs.Count - spaces_in_end - 1);
+                        errorsBody.Add(syllableSections[7].StartedAt + syllableSections[7].Paragraphs.Count - spaces_in_end - 1,
+                            "Сумма часов не совпадает с макетом либо не сходится");
                     }
                 }
-                else indsBody.Add(syllableSections[7].StartedAt + syllableSections[7].Paragraphs.Count - spaces_in_end - 1);
+                else
+                {
+                    errorsBody.Add(syllableSections[7].StartedAt + syllableSections[7].Paragraphs.Count - spaces_in_end - 1,
+                        "Не указана сумма часов");
+                }
             }
             catch
             {
-                indsBody.Add(syllableSections[7].StartedAt);
+                errorsBody.Add(syllableSections[7].StartedAt, "Раздел заполнен неверно");
             }
 
             //Section 8 = 5 Учебно - методическое обеспечение дисциплины
+            // Должна быть пуста
+            if (IsSectionHasContent(syllableSections[8]))
             {
-                bool hasText = false;
-                for (int i = 1; i < syllableSections[8].Paragraphs.Count; i++)
-                {
-                    if (syllableSections[8].Paragraphs[i].Text != "")
-                    {
-                        hasText = true;
-                        break;
-                    }
-                }
-
-                //Т.к. в данном разделе не должно быть ничего написано,
-                // подсвечиваем заголовок ошибкой, если что-то есть
-                if (hasText) indsBody.Add(syllableSections[8].StartedAt);
+                errorsBody.Add(syllableSections[8].StartedAt, "В секции не должно быть содержимого");
             }
 
             //Section 9 = 5.1 Основная литература
+            // Должна быть заполнена
+            if (!IsSectionHasContent(syllableSections[9]))
             {
-                bool hasText = false;
-                for (int i = 1; i < syllableSections[9].Paragraphs.Count; i++)
-                {
-                    if (syllableSections[9].Paragraphs[i].Text != "")
-                    {
-                        hasText = true;
-                        break;
-                    }
-                }
-
-                //Т.к. в данном разделе должно быть написано хоть что-то,
-                // подсвечиваем заголовок ошибкой, если пусто
-                // (не можем проверить конкретное содержимое, too hard)
-                if (!hasText) indsBody.Add(syllableSections[9].StartedAt);
+                errorsBody.Add(syllableSections[9].StartedAt, "Секция не заполнена");
             }
 
             //Section 10 = 5.2 Дополнительная литература
+            // Должна быть заполнена
+            if (!IsSectionHasContent(syllableSections[10]))
             {
-                bool hasText = false;
-                for (int i = 1; i < syllableSections[10].Paragraphs.Count; i++)
-                {
-                    if (syllableSections[10].Paragraphs[i].Text != "")
-                    {
-                        hasText = true;
-                        break;
-                    }
-                }
-
-                //Т.к. в данном разделе должно быть написано хоть что-то,
-                // подсвечиваем заголовок ошибкой, если пусто
-                // (не можем проверить конкретное содержимое, too hard)
-                if (!hasText) indsBody.Add(syllableSections[10].StartedAt);
+                errorsBody.Add(syllableSections[10].StartedAt, "Секция не заполнена");
             }
 
             //Section 11 = 5.3 Периодические издания
+            // Должна быть заполнена
+            if (!IsSectionHasContent(syllableSections[11]))
             {
-                bool hasText = false;
-                for (int i = 1; i < syllableSections[11].Paragraphs.Count; i++)
-                {
-                    if (syllableSections[11].Paragraphs[i].Text != "")
-                    {
-                        hasText = true;
-                        break;
-                    }
-                }
-
-                //Т.к. в данном разделе должно быть написано хоть что-то,
-                // подсвечиваем заголовок ошибкой, если пусто
-                // (не можем проверить конкретное содержимое, too hard)
-                if (!hasText) indsBody.Add(syllableSections[11].StartedAt);
+                errorsBody.Add(syllableSections[11].StartedAt, "Секция не заполнена");
             }
 
             //Section 12 = 5.4 Интернет - ресурсы
+            // Должна быть заполнена
+            if (!IsSectionHasContent(syllableSections[12]))
             {
-                bool hasText = false;
-                for (int i = 1; i < syllableSections[12].Paragraphs.Count; i++)
-                {
-                    if (syllableSections[12].Paragraphs[i].Text != "")
-                    {
-                        hasText = true;
-                        break;
-                    }
-                }
-
-                //Т.к. в данном разделе должно быть написано хоть что-то,
-                // подсвечиваем заголовок ошибкой, если пусто
-                // (не можем проверить конкретное содержимое, too hard)
-                if (!hasText) indsBody.Add(syllableSections[12].StartedAt);
+                errorsBody.Add(syllableSections[12].StartedAt, "Секция не заполнена");
             }
 
             //Section 13 = 5.5 Программное обеспечение, профессиональные базы данных и информационные справочные системы
+            // Должна быть заполнена
+            if (!IsSectionHasContent(syllableSections[13]))
             {
-                bool hasText = false;
-                for (int i = 1; i < syllableSections[13].Paragraphs.Count; i++)
-                {
-                    if (syllableSections[13].Paragraphs[i].Text != "")
-                    {
-                        hasText = true;
-                        break;
-                    }
-                }
-
-                //Т.к. в данном разделе должно быть написано хоть что-то,
-                // подсвечиваем заголовок ошибкой, если пусто
-                // (не можем проверить конкретное содержимое, too hard)
-                if (!hasText) indsBody.Add(syllableSections[13].StartedAt);
+                errorsBody.Add(syllableSections[13].StartedAt, "Секция не заполнена");
             }
 
             //Section 14 = 6 Материально - техническое обеспечение дисциплины
             {
                 //Если не хватает абзацев, подсвечиваем заголовок
                 if (syllableSections[14].Paragraphs.Count < 4)
-                    indsBody.Add(syllableSections[14].StartedAt);
+                {
+                    errorsBody.Add(syllableSections[14].StartedAt, "Раздел не заполнен");
+                }
 
                 //Сравниваем абзацы, которые должны совпадать с макетом
                 for (int i = 0; i < 4; i++)
                 {
                     if (syllableSections[14].Paragraphs[i].Text != modelSections[14].Paragraphs[i].Text)
-                        indsBody.Add(syllableSections[14].StartedAt + i);
+                    {
+                        errorsBody.Add(syllableSections[14].StartedAt + i, 
+                            "Несовпадение с макетом, должно быть: " + modelSections[14].Paragraphs[i].Text);
+                    }
                 }
             }
 
-            return indsBody;
+            return errorsBody;
+        }
+
+        //Для лёгких случаев, когда нужно проверить только заполнена ли секция
+        // true = заполнена
+        // false = пустая
+        private bool IsSectionHasContent(DocSection section)
+        {
+            bool hasText = false;
+            for (int i = 1; i < section.Paragraphs.Count; i++)
+            {
+                if (section.Paragraphs[i].Text != "")
+                {
+                    hasText = true;
+                    break;
+                }
+            }
+
+            return hasText;
         }
 
         //Разбиение документа на секции по наименованиям разделов
@@ -705,7 +708,10 @@ namespace SyllabusChecker
 
                 //Проверяем, достигли ли последнего раздела
                 bool isDocEnding = false;
-                if (ind >= namesOfSections.Count) isDocEnding = true;
+                if (ind >= namesOfSections.Count)
+                {
+                    isDocEnding = true;
+                }
 
                 int startedAt = i;
                 List<Paragraph> paragraphs = new List<Paragraph>();
@@ -721,7 +727,7 @@ namespace SyllabusChecker
                 else
                 {
                     //Если раздел не последний -- записываем все параграфы между двумя соседними разделами
-                    while ((i < doc.SectionParagraphs.Count) && 
+                    while ((i < doc.SectionParagraphs.Count) &&
                         (doc.SectionParagraphs[i].Text != namesOfSections[ind]))
                     {
                         paragraphs.Add(doc.SectionParagraphs[i]);
@@ -753,7 +759,7 @@ namespace SyllabusChecker
             bool currentHightlight;
 
             //разбираем абзац из шаблона по частям, отличающимся подсветкой
-            for(int i = 0; i < p1.MagicText.Count; i++)
+            for (int i = 0; i < p1.MagicText.Count; i++)
             {
                 currentHightlight = p1.MagicText[i].formatting.Highlight == Highlight.green;
                 currentTextPart = p1.MagicText[i].text;
@@ -773,9 +779,9 @@ namespace SyllabusChecker
 
             string p2Text = p2.Text;
 
-            for(int i = 0; i < p1Array.Count; i++)
+            for (int i = 0; i < p1Array.Count; i++)
             {
-                if(p1Array[i].Item2) //зеленый
+                if (p1Array[i].Item2) //зеленый
                 {
                     if (i == p1Array.Count - 1)
                     {
@@ -790,7 +796,7 @@ namespace SyllabusChecker
                 {
                     int index = p2Text.IndexOf(p1Array[i].Item1);
 
-                    if(index == -1)
+                    if (index == -1)
                     {
                         MessageBox.Show("Пропущен обязательный фрагмент: '" + p1Array[i].Item1 + "'");
                         return false;
