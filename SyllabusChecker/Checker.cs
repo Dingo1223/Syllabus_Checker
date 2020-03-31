@@ -10,12 +10,25 @@ namespace SyllabusChecker
 {
     public class Checker
     {
+        /// <summary>
+        /// Макет доумента
+        /// </summary>
         private DocX Model { get; set; }
+
+        /// <summary>
+        /// Проверяемый документ
+        /// </summary>
         private DocX Syllable { get; set; }
 
-        //Счётчик найденных ошибок
+        /// <summary>
+        /// Счётчик найденных ошибок
+        /// </summary>
         public int ErrorsCount;
 
+        /// <summary>
+        /// Проверка документа в соответствии с макетом
+        /// </summary>
+        /// <param name="inputData">Выбранные пользователем расположения файлов</param>
         public Checker(InputData inputData)
         {
             Model = DocX.Load(inputData.ModelPath);
@@ -34,10 +47,12 @@ namespace SyllabusChecker
             ErrorsCount = IndsTitle.Count + IndsBody.Count;
         }
 
-        //Создание результирующего документа (с подсветкой ошибочных мест)
-        //Строится на основе Syllable
-        //Параметр indsTitle -- индексы параграфов с ошибками в титульнике
-        //Параметр indsBody -- индексы параграфов с ошибками в остальном документе
+        /// <summary>
+        /// Создание результирующего документа
+        /// </summary>
+        /// <param name="errorsTitle">Индексы параграфов с ошибками в титульнике</param>
+        /// <param name="errorsBody">Индексы параграфов с ошибками в остальном документе</param>
+        /// <param name="inputData">Выбранные пользователем расположения файлов</param>
         public void CreateResultDoc(Dictionary<int, string> errorsTitle, 
             Dictionary<int, string> errorsBody, InputData inputData)
         {
@@ -61,7 +76,10 @@ namespace SyllabusChecker
             DocComments.AddComments(errorsTitle, errorsBody, Syllable.Sections[0].SectionParagraphs.Count, path);
         }
 
-        //Проверка титульника
+        /// <summary>
+        /// Проверка титульника
+        /// </summary>
+        /// <returns>Dictionary с парами значений "индекс параграфа с ошибкой; описание ошибки"</returns>
         public Dictionary<int, string> CheckTitlePage()
         {
             Dictionary<int, string> errorsTitle = new Dictionary<int, string>();
@@ -107,6 +125,12 @@ namespace SyllabusChecker
         }
 
         //Проверка рабочей программы, по разделам
+        /// <summary>
+        /// Проверка рабочей программы, по разделам
+        /// </summary>
+        /// <param name="modelSections">Разбитый на секции макет документа</param>
+        /// <param name="syllableSections">Разбитый на секции проверяемый документ</param>
+        /// <returns>Dictionary с парами значений "индекс параграфа с ошибкой; описание ошибки"</returns>
         public Dictionary<int, string> CheckSyllableSections(List<DocSection> modelSections, List<DocSection> syllableSections)
         {
             // !!!!!
@@ -493,118 +517,122 @@ namespace SyllabusChecker
             }
 
             //Section 7 = 4.3 Практические занятия(семинары)
-            try
             {
                 int spaces_in_begin = 1, spaces_in_end = 0, spaces_in_end_model = 0;
+                bool hasTable = true;
                 //Считаем, есть ли пустые строки перед таблицей, чтобы если что их пропустить
                 while (!syllableSections[7].Paragraphs[spaces_in_begin].Text.Contains("№ занятия"))
                 {
                     spaces_in_begin++;
                     if (spaces_in_begin >= syllableSections[7].Paragraphs.Count)
                     {
-                        throw new Exception();
+                        hasTable = false;
+                        break;
                     }
                 }
 
-                //Считаем, есть ли пустые строки после таблицы, чтобы если что их пропустить
-                int ind = syllableSections[7].Paragraphs.Count - 1;
-                while (syllableSections[7].Paragraphs[ind].Text == "")
+                if (hasTable)
                 {
-                    spaces_in_end++;
-                    ind--;
-                }
-
-                //Считаем, есть ли пустые строки после таблицы в макете, чтобы если что их пропустить
-                int ind_model = modelSections[7].Paragraphs.Count - 1;
-                while (modelSections[7].Paragraphs[ind_model].Text == "")
-                {
-                    spaces_in_end_model++;
-                    ind_model--;
-                }
-
-                //Заголовки в таблице должны совпадать с моделью
-                for (int i = spaces_in_begin; i < spaces_in_begin + 4; i++)
-                {
-                    if (syllableSections[7].Paragraphs[i].Text != modelSections[7].Paragraphs[i].Text)
+                    //Считаем, есть ли пустые строки после таблицы, чтобы если что их пропустить
+                    int ind = syllableSections[7].Paragraphs.Count - 1;
+                    while (syllableSections[7].Paragraphs[ind].Text == "")
                     {
-                        errorsBody.Add(syllableSections[7].StartedAt + i, 
-                            "Несовпадение с макетом, должно быть: " + modelSections[7].Paragraphs[i].Text);
+                        spaces_in_end++;
+                        ind--;
                     }
-                }
 
-                //Проверяем строчки в таблице
-                int ind_lesson = 0, sum = 0;
-                for (int i = spaces_in_begin + 4; i < syllableSections[7].Paragraphs.Count - 4 - spaces_in_end; i += 4)
-                {
-                    bool isCorrect = true;
-
-                    //Проверяем номер занятия
-                    if (int.TryParse(syllableSections[7].Paragraphs[i].Text, out int x))
+                    //Считаем, есть ли пустые строки после таблицы в макете, чтобы если что их пропустить
+                    int ind_model = modelSections[7].Paragraphs.Count - 1;
+                    while (modelSections[7].Paragraphs[ind_model].Text == "")
                     {
-                        if (x != ind_lesson + 1)
+                        spaces_in_end_model++;
+                        ind_model--;
+                    }
+
+                    //Заголовки в таблице должны совпадать с моделью
+                    for (int i = spaces_in_begin; i < spaces_in_begin + 4; i++)
+                    {
+                        if (syllableSections[7].Paragraphs[i].Text != modelSections[7].Paragraphs[i].Text)
+                        {
+                            errorsBody.Add(syllableSections[7].StartedAt + i,
+                                "Несовпадение с макетом, должно быть: " + modelSections[7].Paragraphs[i].Text);
+                        }
+                    }
+
+                    //Проверяем строчки в таблице
+                    int ind_lesson = 0, sum = 0;
+                    for (int i = spaces_in_begin + 4; i < syllableSections[7].Paragraphs.Count - 4 - spaces_in_end; i += 4)
+                    {
+                        bool isCorrect = true;
+
+                        //Проверяем номер занятия
+                        if (int.TryParse(syllableSections[7].Paragraphs[i].Text, out int x))
+                        {
+                            if (x != ind_lesson + 1)
+                            {
+                                isCorrect = false;
+                            }
+
+                            ind_lesson = x;
+                        }
+                        else
                         {
                             isCorrect = false;
                         }
 
-                        ind_lesson = x;
+                        //Проверяем номер раздела
+                        if (!int.TryParse(syllableSections[7].Paragraphs[i + 1].Text, out int y))
+                        {
+                            isCorrect = false;
+                        }
+
+                        //Проверяем тему
+                        if (syllableSections[7].Paragraphs[i + 2].Text == "")
+                        {
+                            isCorrect = false;
+                        }
+
+                        //Проверяем количество часов
+                        if (int.TryParse(syllableSections[7].Paragraphs[i + 3].Text, out int s))
+                        {
+                            sum += s;
+                        }
+                        else
+                        {
+                            isCorrect = false;
+                        }
+
+                        //Если где-то в строке ошибка -- подсвечиваем всю строку
+                        if (!isCorrect)
+                        {
+                            errorsBody.Add(syllableSections[7].StartedAt + i + 3, "Ошибка в данной строке таблицы");
+                        }
+                    }
+
+                    if (int.TryParse(syllableSections[7].Paragraphs[syllableSections[7].Paragraphs.Count -
+                        spaces_in_end - 1].Text, out int sum_syl))
+                    {
+                        int sum_model = int.Parse(modelSections[7].Paragraphs[modelSections[7].Paragraphs.Count -
+                            spaces_in_end_model - 1].Text);
+
+                        //Если сумма в РП не совпадает с суммой в макете
+                        // или если итого по таблице не сходится = ошибка
+                        if ((sum_syl != sum_model) || (sum_syl != sum))
+                        {
+                            errorsBody.Add(syllableSections[7].StartedAt + syllableSections[7].Paragraphs.Count - spaces_in_end - 1,
+                                "Сумма часов не совпадает с макетом либо не сходится");
+                        }
                     }
                     else
-                    {
-                        isCorrect = false;
-                    }
-
-                    //Проверяем номер раздела
-                    if (!int.TryParse(syllableSections[7].Paragraphs[i + 1].Text, out int y))
-                    {
-                        isCorrect = false;
-                    }
-
-                    //Проверяем тему
-                    if (syllableSections[7].Paragraphs[i + 2].Text == "")
-                    {
-                        isCorrect = false;
-                    }
-
-                    //Проверяем количество часов
-                    if (int.TryParse(syllableSections[7].Paragraphs[i + 3].Text, out int s))
-                    {
-                        sum += s;
-                    }
-                    else
-                    {
-                        isCorrect = false;
-                    }
-
-                    //Если где-то в строке ошибка -- подсвечиваем всю строку
-                    if (!isCorrect)
-                    {
-                        errorsBody.Add(syllableSections[7].StartedAt + i + 3, "Ошибка в данной строке таблицы");
-                    }
-                }
-
-                if (int.TryParse(syllableSections[7].Paragraphs[syllableSections[7].Paragraphs.Count -
-                    spaces_in_end - 1].Text, out int sum_syl))
-                {
-                    int sum_model = int.Parse(modelSections[7].Paragraphs[modelSections[7].Paragraphs.Count -
-                        spaces_in_end_model - 1].Text);
-
-                    //Если сумма в РП не совпадает с суммой в макете
-                    // или если итого по таблице не сходится = ошибка
-                    if ((sum_syl != sum_model) || (sum_syl != sum))
                     {
                         errorsBody.Add(syllableSections[7].StartedAt + syllableSections[7].Paragraphs.Count - spaces_in_end - 1,
-                            "Сумма часов не совпадает с макетом либо не сходится");
+                            "Не указана сумма часов");
                     }
                 }
                 else
                 {
-                    errorsBody.Add(syllableSections[7].StartedAt + syllableSections[7].Paragraphs.Count - spaces_in_end - 1,
-                        "Не указана сумма часов");
+                    errorsBody.Add(syllableSections[7].StartedAt, "Раздел заполнен неверно");
                 }
-            }
-            catch
-            {
-                errorsBody.Add(syllableSections[7].StartedAt, "Раздел заполнен неверно");
             }
 
             //Section 8 = 5 Учебно - методическое обеспечение дисциплины
@@ -615,65 +643,47 @@ namespace SyllabusChecker
             }
 
             //Section 9 = 5.1 Основная литература
-            // Должна быть заполнена
-            if (!IsSectionHasContent(syllableSections[9]))
-            {
-                errorsBody.Add(syllableSections[9].StartedAt, "Секция не заполнена");
-            }
-
             //Section 10 = 5.2 Дополнительная литература
-            // Должна быть заполнена
-            if (!IsSectionHasContent(syllableSections[10]))
-            {
-                errorsBody.Add(syllableSections[10].StartedAt, "Секция не заполнена");
-            }
-
             //Section 11 = 5.3 Периодические издания
-            // Должна быть заполнена
-            if (!IsSectionHasContent(syllableSections[11]))
-            {
-                errorsBody.Add(syllableSections[11].StartedAt, "Секция не заполнена");
-            }
-
             //Section 12 = 5.4 Интернет - ресурсы
-            // Должна быть заполнена
-            if (!IsSectionHasContent(syllableSections[12]))
-            {
-                errorsBody.Add(syllableSections[12].StartedAt, "Секция не заполнена");
-            }
-
             //Section 13 = 5.5 Программное обеспечение, профессиональные базы данных и информационные справочные системы
-            // Должна быть заполнена
-            if (!IsSectionHasContent(syllableSections[13]))
+            // Должны быть заполнены (не можем проверить содержимое дословно)
+            for (int i = 9; i <= 13; i++)
             {
-                errorsBody.Add(syllableSections[13].StartedAt, "Секция не заполнена");
+                if (!IsSectionHasContent(syllableSections[i]))
+                {
+                    errorsBody.Add(syllableSections[i].StartedAt, "Секция не заполнена");
+                }
             }
 
             //Section 14 = 6 Материально - техническое обеспечение дисциплины
             {
-                //Если не хватает абзацев, подсвечиваем заголовок
-                if (syllableSections[14].Paragraphs.Count < 4)
-                {
-                    errorsBody.Add(syllableSections[14].StartedAt, "Раздел не заполнен");
-                }
-
                 //Сравниваем абзацы, которые должны совпадать с макетом
-                for (int i = 0; i < 4; i++)
+                try
                 {
-                    if (syllableSections[14].Paragraphs[i].Text != modelSections[14].Paragraphs[i].Text)
+                    for (int i = 0; i < 4; i++)
                     {
-                        errorsBody.Add(syllableSections[14].StartedAt + i, 
-                            "Несовпадение с макетом, должно быть: " + modelSections[14].Paragraphs[i].Text);
+                        if (syllableSections[14].Paragraphs[i].Text != modelSections[14].Paragraphs[i].Text)
+                        {
+                            errorsBody.Add(syllableSections[14].StartedAt + i,
+                                "Несовпадение с макетом, должно быть: " + modelSections[14].Paragraphs[i].Text);
+                        }
                     }
+                }
+                catch //Если не хватает обязательных абзацев
+                {
+                    errorsBody.Add(syllableSections[14].StartedAt, "Раздел не заполнен полностью");
                 }
             }
 
             return errorsBody;
         }
 
-        //Для лёгких случаев, когда нужно проверить только заполнена ли секция
-        // true = заполнена
-        // false = пустая
+        /// <summary>
+        /// Для лёгких случаев, когда нужно проверить только заполнена ли секция
+        /// </summary>
+        /// <param name="section">Секция документа, которую нужно проверить</param>
+        /// <returns>True, если в секции есть какой-либо текст; False - если нет</returns>
         private bool IsSectionHasContent(DocSection section)
         {
             bool hasText = false;
@@ -689,10 +699,11 @@ namespace SyllabusChecker
             return hasText;
         }
 
-        //Разбиение документа на секции по наименованиям разделов
-        //Список наименований лежит в ресурсах
-        //Результат -- список секций
-        //Каждая секция -- заголовок секции + всё, что после него и до следующего заголовка
+        /// <summary>
+        /// Разбиение документа на секции по наименованиям разделов; список наименований лежит в ресурсах
+        /// </summary>
+        /// <param name="doc">Документ для разбиения</param>
+        /// <returns>Список секций; каждая секция - заголовок секции + всё, что после него и до следующего заголовка</returns>
         public List<DocSection> GetDocSections(Section doc)
         {
             //Получаем имена разделов (хранятся в ресурсах)

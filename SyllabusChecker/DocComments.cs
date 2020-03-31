@@ -9,6 +9,13 @@ namespace SyllabusChecker
 {
     public static class DocComments
     {
+        /// <summary>
+        /// Для добавления комментариев в .docx
+        /// </summary>
+        /// <param name="errorsTitle">Список индексов ошибок в титульном листе, с описаниями</param>
+        /// <param name="errorsBody">Список индексов ошибок в остальном документе, с описаниями</param>
+        /// <param name="shift">Количество параграфов в титульном листе (вызывает сдвиги в нумерации параграфов)</param>
+        /// <param name="path">Путь к сохраняемому файлу с результатами</param>
         public static void AddComments(Dictionary<int, string> errorsTitle,
             Dictionary<int, string> errorsBody, int shift, string path)
         {
@@ -26,6 +33,12 @@ namespace SyllabusChecker
             }
         }
 
+        /// <summary>
+        /// Добавление комментария к параграфу в документе
+        /// </summary>
+        /// <param name="document">WordprocessingDocument файла результатов</param>
+        /// <param name="ind">Индекс параграфа в документе</param>
+        /// <param name="comment">Комментарий к ошибке (текст комментария)</param>
         private static void AddCommentOnParagraph(WordprocessingDocument document, int ind, string comment)
         {
             Paragraph paragraph = document.MainDocumentPart.Document.Descendants<Paragraph>().ElementAt(ind);
