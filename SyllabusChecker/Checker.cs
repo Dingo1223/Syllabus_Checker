@@ -792,7 +792,7 @@ namespace SyllabusChecker
         {
             //Получаем имена разделов (хранятся в ресурсах)
             string names = Properties.Resources.NamesOfSections;
-            List<string> namesOfSections = names.Split(new string[] { "\r\n" },
+            List<string> namesOfSections = names.Split(new string[] { "\n" },
                 StringSplitOptions.RemoveEmptyEntries).ToList<string>();
             int ind = 0;
 
@@ -800,6 +800,7 @@ namespace SyllabusChecker
             List<DocSection> docSections = new List<DocSection>();
             for (int i = 0; i < doc.SectionParagraphs.Count; i++)
             {
+                namesOfSections[ind] = namesOfSections[ind].Replace("\r", "");
                 while (doc.SectionParagraphs[i].Text != namesOfSections[ind])
                 {
                     i++;
@@ -816,6 +817,10 @@ namespace SyllabusChecker
                 if (ind >= namesOfSections.Count)
                 {
                     isDocEnding = true;
+                }
+                else
+                {
+                    namesOfSections[ind] = namesOfSections[ind].Replace("\r", "");
                 }
 
                 int startedAt = i;
