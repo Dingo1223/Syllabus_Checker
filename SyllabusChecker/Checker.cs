@@ -71,28 +71,36 @@ namespace SyllabusChecker
 
             for (int i = 0; i < title_model.SectionParagraphs.Count; i++)
             {
-                Paragraph par_model = title_model.SectionParagraphs[i];
-                if (par_model.Text == "")
+                if (title_model.SectionParagraphs[i].Text == "")
                 {
                     continue;
                 }
 
-                for (int j = ind; j < title_model.SectionParagraphs.Count; j++)
+                for (int j = ind; j < title_syllable.SectionParagraphs.Count; j++)
                 {
                     ind++;
-                    Paragraph par_syllable = title_syllable.SectionParagraphs[j];
-                    if (par_syllable.Text == "")
+                    if (title_syllable.SectionParagraphs[j].Text == "")
                     {
                         continue;
                     }
 
-                    if (par_model.Text != par_syllable.Text)
+                    if (title_model.SectionParagraphs[i].Text != title_syllable.SectionParagraphs[j].Text)
                     {
                         //Записываем номер параграфа, в котором ошибка
-                        errorsTitle.Add(j, "Несовпадение с макетом, должно быть: " + par_model.Text);
+                        errorsTitle.Add(j, "Несовпадение с макетом, должно быть: " + 
+                            title_model.SectionParagraphs[i].Text);
                     }
                     break;
                 }
+            }
+
+            //Проверка колонтитула (номер должен совпадать)
+            string model_footer = Model.Sections[0].Footers.Odd.Paragraphs[Model.Sections[0].Footers.Odd.Paragraphs.Count - 1].Text,
+                syllable_footer = Syllable.Sections[0].Footers.Odd.Paragraphs[Syllable.Sections[0].Footers.Odd.Paragraphs.Count - 1].Text;
+            if (syllable_footer != model_footer)
+            {
+                errorsTitle.Add(title_syllable.SectionParagraphs.Count - 1, 
+                    "Колонтитул не совпадает с макетом, должно быть: " + model_footer);
             }
 
             return errorsTitle;
@@ -275,7 +283,8 @@ namespace SyllabusChecker
                     //Сравниваем абзацы, которые должны совпадать с макетом
                     if (syllableSections[2].Paragraphs[i].Text != modelSections[2].Paragraphs[i].Text)
                     {
-                        errorsBody.Add(syllableSections[2].StartedAt + i, "Несовпадение с макетом, должно быть: " + modelSections[2].Paragraphs[i].Text);
+                        errorsBody.Add(syllableSections[2].StartedAt + i, 
+                            "Несовпадение с макетом, должно быть: " + modelSections[2].Paragraphs[i].Text);
                     }
                 }
             }
@@ -701,7 +710,8 @@ namespace SyllabusChecker
                     i++;
                     if (i >= doc.SectionParagraphs.Count)
                     {
-                        throw new Exception("Критическая ошибка: отсутствует раздел рабочей программы");
+                        throw new Exception("Критическая ошибка: отсутствует раздел рабочей программы \"" +
+                            namesOfSections[ind] + "\"");
                     }
                 }
                 ind++;
