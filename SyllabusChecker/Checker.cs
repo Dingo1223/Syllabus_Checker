@@ -141,85 +141,186 @@ namespace SyllabusChecker
 
             //Section 0 = Рабочая программа рассмотрена и утверждена на заседании кафедры
             {
-                /*  int CurrentIndexParagraphSyllable = 0, CurrentIndexParagraphModel = 0;
-                  for(int i = 0; i < syllableSections[0].Paragraphs.Count; i++)
-                  {
-                      while(syllableSections[0].Paragraphs[i].Text != modelSections[0].Paragraphs[CurrentIndexParagraphModel].Text)
-                      {
-                      }
-                      if(syllableSections[0].Paragraphs[i].Text != "" || (syllableSections[0].Paragraphs[i].Text == "" && modelSections[0].Paragraphs[i].Text == ""))
-                      {
-                      }
-                      if(syllableSections[0].Paragraphs[i].Text == modelSections[0].Paragraphs[CurrentIndexParagraphModel].Text)
-                      {
-                          CurrentIndexParagraphModel++;
-                      }
-                      else
-                      {
-                          while (CurrentIndexParagraphModel < modelSections[0].Paragraphs.Count && syllableSections[0].Paragraphs[i].Text != modelSections[0].Paragraphs[CurrentIndexParagraphModel].Text);
-                          {
-                              CurrentIndexParagraphModel++;
-                          }
-                          if(CurrentIndexParagraphModel != modelSections[0].Paragraphs.Count)
-                          {
-                              CurrentIndexParagraphModel++;
-                          }
-                          else
-                          {
-                              //ошибка
-                          }
-                     }
-                  }
-                  */
-                for (int i = 0; i <= 9; i++) //проверяем первые 10 параграфов, они должны быть идентичны
+                //поскольку игнорируем пустые строки, избавляемся от них
+                int tempForModel = 0, tempForSyllable = 0;
+
+                for (int i = 0; i < modelSections[0].Paragraphs.Count; i++)
                 {
-                    if (i < syllableSections[0].Paragraphs.Count && i < modelSections[0].Paragraphs.Count && syllableSections[0].Paragraphs[i].Text != modelSections[0].Paragraphs[i].Text)
+                    if (modelSections[0].Paragraphs[i].Text != "")
+                        tempForModel++;
+                }
+
+                for (int i = 0; i < syllableSections[0].Paragraphs.Count; i++)
+                {
+                    if (syllableSections[0].Paragraphs[i].Text != "")
+                        tempForSyllable++;
+                }
+
+                string[,] model = new string[tempForModel, 3];
+                string[,] syllable = new string[tempForSyllable, 2];
+
+                for (int i = 0, j = 0; i < modelSections[0].Paragraphs.Count; i++)
+                {
+                    if (modelSections[0].Paragraphs[i].Text != "")
                     {
-                        errorsBody.Add(syllableSections[0].StartedAt + i, "Несовпадение с макетом, должно быть: " + modelSections[0].Paragraphs[i].Text);
+                        model[j, 0] = modelSections[0].Paragraphs[i].Text;
+                        model[j, 1] = (modelSections[0].StartedAt + i).ToString();
+                        j++;
                     }
                 }
 
-                //Обязательно должен быт указан исполнитель, т.е. параграф должен отличаться от того, что в макете
-                if (10 < syllableSections[0].Paragraphs.Count && 10 < modelSections[0].Paragraphs.Count && syllableSections[0].Paragraphs[10].Text == modelSections[0].Paragraphs[10].Text)
+                for (int i = 0, j = 0; i < syllableSections[0].Paragraphs.Count; i++)
                 {
-                    errorsBody.Add(syllableSections[0].StartedAt + 10, "Не указан исполнитель");
-                    //ошибка
-                }
-
-                //обязательно должно быть идентичено
-                if (11 < syllableSections[0].Paragraphs.Count && 11 < modelSections[0].Paragraphs.Count && syllableSections[0].Paragraphs[11].Text != modelSections[0].Paragraphs[11].Text)
-                {
-                    errorsBody.Add(syllableSections[0].StartedAt + 11, "Несовпадение с макетом, должно быть: " + modelSections[0].Paragraphs[11].Text);
-                }
-
-                //12 может быть заполнен, а может быть не заполнен, поэтому не проверяем
-                //с 13 по  22 должны быть идентичны
-                for (int i = 13; i <= 22; i++)
-                {
-                    if (i < syllableSections[0].Paragraphs.Count && i < modelSections[0].Paragraphs.Count && syllableSections[0].Paragraphs[i].Text != modelSections[0].Paragraphs[i].Text)
+                    if (syllableSections[0].Paragraphs[i].Text != "")
                     {
-                        errorsBody.Add(syllableSections[0].StartedAt + i, "Несовпадение с макетом, должно быть: " + modelSections[0].Paragraphs[i].Text);
+                        syllable[j, 0] = syllableSections[0].Paragraphs[i].Text;
+                        syllable[j, 1] = (syllableSections[0].StartedAt + i).ToString();
+                        j++;
                     }
                 }
 
-                //Обязательно должен быт указан исполнитель, т.е. параграф должен отличаться от того, что в макете
-                if (23 < syllableSections[0].Paragraphs.Count && 23 < modelSections[0].Paragraphs.Count && syllableSections[0].Paragraphs[23].Text == modelSections[0].Paragraphs[23].Text)
+                List<int> errorIndexModel = new List<int>();
+                //проверяем, что все обязательные строки присутствуют
+                int temp9 = 0, temp18 = 0;
+                for (int i = 0; i < tempForModel; i++)
                 {
-                    errorsBody.Add(syllableSections[0].StartedAt + 23, "Не указан исполнитель");
+                    if ((i >= 0 && i <= 7) || i == 9 || (i >= 11 && i <= 19) || (i >= 21 && i <= 24))
+                    {
+                        int k = 0;
+                        while (k < tempForSyllable && model[i, 0] != syllable[k, 0])
+                        {
+                            k++;
+                        }
+                        if (k < tempForSyllable)
+                        {
+                            model[i, 2] = "1";
+
+                            if (i == 9)
+                            {
+                                temp9 = k;
+                            }
+                            if (i == 18)
+                            {
+                                temp18 = k;
+                            }
+                        }
+                        else
+                        {
+                            model[i, 2] = "0";
+                        }
+                    }
+                }
+                //поскольку у нас есть одинаковые строки, то проверяем начилие вторых одинаковых строк отдельно
+                {
+                    int k = tempForSyllable - 1;
+                    while (k != -1 && model[11, 0] != syllable[k, 0])
+                    {
+                        k--;
+                    }
+                    if (k != -1 && k != temp9)
+                    {
+                        model[11, 2] = "1";
+                    }
+                    else
+                    {
+                        model[11, 2] = "0";
+                    }
+                }
+                {
+                    int k = tempForSyllable - 1;
+                    while (k != -1 && model[21, 0] != syllable[k, 0])
+                    {
+                        k--;
+                    }
+                    if (k != -1 && k != temp9)
+                    {
+                        model[21, 2] = "1";
+                    }
+                    else
+                    {
+                        model[21, 2] = "0";
+                    }
                 }
 
-                //обязательно должно быть идентичено
-                if (24 < syllableSections[0].Paragraphs.Count && 24 < modelSections[0].Paragraphs.Count && syllableSections[0].Paragraphs[24].Text != modelSections[0].Paragraphs[24].Text)
                 {
-                    errorsBody.Add(syllableSections[0].StartedAt + 24, "Несовпадение с макетом, должно быть: " + modelSections[0].Paragraphs[24].Text);
-                }
-                //25 может быть заполнен, а может быть не заполнен, поэтому не проверяем
-                //с 26 параграфа до конца(53) должно быть идентично
-                for (int i = 26; i <= 54; i++)
-                {
-                    if (i < syllableSections[0].Paragraphs.Count && i < modelSections[0].Paragraphs.Count && syllableSections[0].Paragraphs[i].Text != modelSections[0].Paragraphs[i].Text)
+                    int i = 0, j = 0;
+                    while (j < tempForSyllable - 1)
                     {
-                        errorsBody.Add(syllableSections[0].StartedAt + i, "Несовпадение с макетом, должно быть: " + modelSections[0].Paragraphs[i].Text);
+                        if (model[i, 2] == "1" && model[i, 0] == syllable[j, 0])
+                        {
+                            i++;
+                            j++;
+                        }
+                        else
+                        {
+                            if (model[i, 2] == "0")
+                            {
+                                //такой строки нет, говорим об этом. Будет отмечена первая строка в документе
+                                if (!errorsBody.ContainsKey(int.Parse(syllable[j, 1])))
+                                {
+                                    errorsBody.Add(int.Parse(syllable[j, 1]), "Несовпадение с макетом, должно быть: " + model[i, 0]);
+
+                                }
+                                i++;
+                            }
+                            else
+                            {
+                                if (model[i, 2] == "1" && model[i, 0] != syllable[j, 0])
+                                {
+                                    if (!errorsBody.ContainsKey(int.Parse(syllable[j, 1])))
+                                    {
+                                        errorsBody.Add(int.Parse(syllable[j, 1]), "Несовпадение с макетом, должно быть: " + model[i, 0]);
+                                    }
+                                    //ошибка, что строка неправильная
+                                    j++;
+                                }
+                            }
+
+                        }
+                        if (model[i, 2] == null)
+                        {
+                            if (i == 10)
+                            {
+                                i++;
+                                j++;
+                            }
+                            if (i == 8)
+                            {
+                                if (model[i, 0].Replace(" ","") == syllable[j, 0].Replace(" ", ""))
+                                {
+                                    if (!errorsBody.ContainsKey(int.Parse(syllable[j, 1])))
+                                    {
+                                        errorsBody.Add(int.Parse(syllable[j, 1]), "Не указан исполнитель");
+                                    }
+                                    //ошибка, строки должны быть различны, т.е. поле заполнено
+                                    i++;
+                                    j++;
+                                }
+                                else
+                                {
+                                    i++;
+                                    j++;
+                                }
+                            }
+                            if (i == 20)
+                            {
+                                if (model[i, 0].Replace(" ", "") == syllable[j, 0].Replace(" ", ""))
+                                {
+                                    if (!errorsBody.ContainsKey(int.Parse(syllable[j, 1])))
+                                    {
+                                        errorsBody.Add(int.Parse(syllable[j, 1]), "Не указан уполномоченный");
+                                    }
+                                    //ошибка, они должны быть различны, т.е. поле заполнено
+                                    i++;
+                                    j++;
+                                }
+                                else
+                                {
+                                    i++;
+                                    j++;
+                                }
+                            }
+                        }
                     }
                 }
             }
