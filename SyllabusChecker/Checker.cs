@@ -337,9 +337,8 @@ namespace SyllabusChecker
                     ind++;
                 }
 
-                if (ind == syllableSections[1].Paragraphs.Count)
+                if (ind >= syllableSections[1].Paragraphs.Count)
                 {
-                    //нет пункта "Цели..."
                     errorsBody.Add(syllableSections[1].StartedAt, "Нет пункта \"Цели освоения дисциплины\"");
                 }
                 else
@@ -358,13 +357,11 @@ namespace SyllabusChecker
                     {
                         hasTargets = true;
                     }
-
                     ind++;
                 }
 
-                if (ind == syllableSections[1].Paragraphs.Count)
+                if (ind >= syllableSections[1].Paragraphs.Count)
                 {
-                    //нет пункта "Задачи"
                     errorsBody.Add(syllableSections[1].StartedAt, "Нет пункта \"Задачи\"");
                 }
                 else
@@ -397,20 +394,39 @@ namespace SyllabusChecker
 
             //Section 2 = 2 Место дисциплины в структуре образовательной программы
             {
-                //Если не хватает абзацев, подсвечиваем заголовок
-                if (syllableSections[2].Paragraphs.Count < 6)
+                Dictionary<int, string> mod = new Dictionary<int, string>(),
+                    syl = new Dictionary<int, string>();
+
+                for (int i = 0; i < modelSections[2].Paragraphs.Count; i++)
                 {
-                    errorsBody.Add(syllableSections[2].StartedAt, "Раздел не заполнен полностью");
+                    if (modelSections[2].Paragraphs[i].Text != "")
+                    {
+                        mod.Add(i + modelSections[2].StartedAt, modelSections[2].Paragraphs[i].Text);
+                    }
                 }
 
-                for (int i = 0; i < 6; i++)
+                for (int i = 0; i < syllableSections[2].Paragraphs.Count; i++)
                 {
-                    //Сравниваем абзацы, которые должны совпадать с макетом
-                    if (syllableSections[2].Paragraphs[i].Text != modelSections[2].Paragraphs[i].Text)
+                    if (syllableSections[2].Paragraphs[i].Text != "")
                     {
-                        errorsBody.Add(syllableSections[2].StartedAt + i, 
-                            "Несовпадение с макетом, должно быть: " + modelSections[2].Paragraphs[i].Text);
+                        syl.Add(i + syllableSections[2].StartedAt, syllableSections[2].Paragraphs[i].Text);
                     }
+                }
+
+                if (mod.Count == syl.Count)
+                {
+                    for (int i = 0; i < syl.Count; i++)
+                    {
+                        if (syl.Values.ElementAt(i) != mod.Values.ElementAt(i))
+                        {
+                            errorsBody.Add(syl.Keys.ElementAt(i),
+                                "Несовпадение с макетом, должно быть: " + mod.Values.ElementAt(i));
+                        }
+                    }
+                }
+                else
+                {
+                    errorsBody.Add(syllableSections[2].StartedAt, "Раздел не заполнен полностью");
                 }
             }
 
@@ -586,32 +602,28 @@ namespace SyllabusChecker
 
 
             //Section 6 = 4.2 Содержание разделов дисциплины
+            //Должна быть заполнена
             {
-                bool hasText = false;
-                int counter = 0;
-                for (int i = 1; i < syllableSections[6].Paragraphs.Count; i++)
+                if (IsSectionHasContent(syllableSections[6]))
                 {
-                    if (syllableSections[6].Paragraphs[i].Text != "")
+                    int counter = 0;
+                    for (int i = 1; i < syllableSections[6].Paragraphs.Count; i++)
                     {
-                        hasText = true;
-
-                        //Проверяем нумерацию разделов
-                        //Если пропущен раздел -- подсвечиваем вокруг этого пустого места
-                        if (int.TryParse(syllableSections[6].Paragraphs[i].Text.Split(' ')[0], out int x))
+                        if (syllableSections[6].Paragraphs[i].Text != "")
                         {
-                            if (x != counter + 1)
+                            //Проверяем нумерацию разделов
+                            if (int.TryParse(syllableSections[6].Paragraphs[i].Text.Split(' ')[0], out int x))
                             {
-                                errorsBody.Add(syllableSections[6].StartedAt + i, "Нарушена нумерация разделов");
+                                if (x != counter + 1)
+                                {
+                                    errorsBody.Add(syllableSections[6].StartedAt + i, "Нарушена нумерация разделов");
+                                }
+                                counter = x;
                             }
-                            counter = x;
                         }
                     }
                 }
-
-                //Т.к. в данном разделе должно быть написано хоть что-то,
-                // подсвечиваем заголовок ошибкой, если пусто
-                // (не можем проверить конкретное содержимое, too hard)
-                if (!hasText)
+                else
                 {
                     errorsBody.Add(syllableSections[6].StartedAt, "Секция не заполнена");
                 }
@@ -664,49 +676,20 @@ namespace SyllabusChecker
                     int ind_lesson = 0, sum = 0;
                     for (int i = spaces_in_begin + 4; i < syllableSections[7].Paragraphs.Count - 4 - spaces_in_end; i += 4)
                     {
-                        bool isCorrect = true;
+                        int s = 0;
+                        bool isCorrect = int.TryParse(syllableSections[7].Paragraphs[i].Text, out int x) &&
+                            int.TryParse(syllableSections[7].Paragraphs[i + 1].Text, out _) &&
+                            (syllableSections[7].Paragraphs[i + 2].Text != "") &&
+                            int.TryParse(syllableSections[7].Paragraphs[i + 3].Text, out s) &&
+                            (x == ind_lesson + 1);
 
-                        //Проверяем номер занятия
-                        if (int.TryParse(syllableSections[7].Paragraphs[i].Text, out int x))
-                        {
-                            if (x != ind_lesson + 1)
-                            {
-                                isCorrect = false;
-                            }
-
-                            ind_lesson = x;
-                        }
-                        else
-                        {
-                            isCorrect = false;
-                        }
-
-                        //Проверяем номер раздела
-                        if (!int.TryParse(syllableSections[7].Paragraphs[i + 1].Text, out int y))
-                        {
-                            isCorrect = false;
-                        }
-
-                        //Проверяем тему
-                        if (syllableSections[7].Paragraphs[i + 2].Text == "")
-                        {
-                            isCorrect = false;
-                        }
-
-                        //Проверяем количество часов
-                        if (int.TryParse(syllableSections[7].Paragraphs[i + 3].Text, out int s))
-                        {
-                            sum += s;
-                        }
-                        else
-                        {
-                            isCorrect = false;
-                        }
+                        ind_lesson = x;
+                        sum += s;
 
                         //Если где-то в строке ошибка -- подсвечиваем всю строку
                         if (!isCorrect)
                         {
-                            errorsBody.Add(syllableSections[7].StartedAt + i + 3, "Ошибка в данной строке таблицы");
+                            errorsBody.Add(syllableSections[7].StartedAt + i, "Ошибка в данной строке таблицы");
                         }
                     }
 
