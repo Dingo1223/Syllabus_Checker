@@ -837,11 +837,15 @@ namespace SyllabusChecker
                 else
                 {
                     //Если раздел не последний -- записываем все параграфы между двумя соседними разделами
-                    while ((i < doc.SectionParagraphs.Count) &&
-                        (doc.SectionParagraphs[i].Text != namesOfSections[ind]))
+                    while (doc.SectionParagraphs[i].Text != namesOfSections[ind])
                     {
                         paragraphs.Add(doc.SectionParagraphs[i]);
                         i++;
+                        if (i >= doc.SectionParagraphs.Count)
+                        {
+                            throw new Exception("Критическая ошибка: отсутствует раздел рабочей программы \"" +
+                                namesOfSections[ind] + "\"");
+                        }
                     }
                 }
                 i--;
