@@ -3,11 +3,24 @@ using System.IO;
 
 namespace SyllabusChecker
 {
-    //Для хранения и передачи путей к файлам, выбранных в главном окне
+    /// <summary>
+    /// Для хранения и передачи путей к файлам, выбранных в главном окне
+    /// </summary>
     public class InputData
     {
+        /// <summary>
+        /// Путь к файлу макета
+        /// </summary>
         public string ModelPath { get; set; }
+
+        /// <summary>
+        /// Путь к проверяемому файлу
+        /// </summary>
         public string SyllablePath { get; set; }
+
+        /// <summary>
+        /// Путь к папке для сохранения результата
+        /// </summary>
         public string ResultFolderPath { get; set; }
 
         public InputData()

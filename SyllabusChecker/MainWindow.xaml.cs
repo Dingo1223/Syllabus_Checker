@@ -9,7 +9,6 @@ namespace SyllabusChecker
     /// <summary>
     /// Логика взаимодействия для MainWindow.xaml
     /// </summary>
-    /// 
     public partial class MainWindow : Window
     {
         private readonly InputData InputData;
@@ -23,7 +22,9 @@ namespace SyllabusChecker
             TbResultFolderPath.Text = InputData.ResultFolderPath;
         }
 
-        //Обработка нажатия на кнопку выбора расположения файла с макетом
+        /// <summary>
+        /// Обработка нажатия на кнопку выбора расположения файла с макетом
+        /// </summary>
         private void BtnSelectModelPath_Click(object sender, RoutedEventArgs e)
         {
             OpenFileDialog ofd = new OpenFileDialog
@@ -37,7 +38,9 @@ namespace SyllabusChecker
             }
         }
 
-        //Обработка нажатия на кнопку выбора расположения готового файла рабочей программы
+        /// <summary>
+        /// Обработка нажатия на кнопку выбора расположения готового файла рабочей программы
+        /// </summary>
         private void BtnSelectSyllablePath_Click(object sender, RoutedEventArgs e)
         {
             OpenFileDialog ofd = new OpenFileDialog
@@ -51,7 +54,9 @@ namespace SyllabusChecker
             }
         }
 
-        //Обработка нажатия на кнопку выбора расположения проверенного файла рабочей программы
+        /// <summary>
+        /// Обработка нажатия на кнопку выбора расположения проверенного файла рабочей программы
+        /// </summary>
         private void BtnSelectResultFolder_Click(object sender, RoutedEventArgs e)
         {
             FolderBrowserDialog fbd = new FolderBrowserDialog
@@ -65,7 +70,9 @@ namespace SyllabusChecker
             }
         }
 
-        //Обработка нажатия на кнопку "Выполнить проверку"
+        /// <summary>
+        /// Обработка нажатия на кнопку "Выполнить проверку"
+        /// </summary>
         private void BtnCheckSyllableStart_Click(object sender, RoutedEventArgs e)
         {
             if (!(new FileInfo(InputData.ModelPath).Exists) || (InputData.ModelPath == ""))
@@ -101,7 +108,9 @@ namespace SyllabusChecker
             //checker.checkParagraphEquality();
         }
 
-        //При закрытии программы сохраняет выбранные пути
+        /// <summary>
+        /// При закрытии программы сохраняет выбранные пути
+        /// </summary>
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
