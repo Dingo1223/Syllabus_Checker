@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using Xceed.Document.NET;
 using Xceed.Words.NET;
-using MessageBox = System.Windows.MessageBox;
 
 namespace SyllabusChecker
 {
@@ -858,11 +857,16 @@ namespace SyllabusChecker
             return docSections;
         }
 
-        public static bool checkDocumentsEquality(InputData inputData)
+        /// <summary>
+        /// Проверяет два документа на соответствие (подсветка)
+        /// </summary>
+        /// <param name="inputData">Выбранные пользователем расположения файлов</param>
+        /// <returns></returns>
+        public static bool CheckDocumentsEquality(InputData inputData)
         {
             DocX Model = DocX.Load(inputData.ModelPath);
             DocX Syllable = DocX.Load(inputData.SyllablePath);
-            return HighlightHandler.checkDocumentsTextEquality(Model, Syllable);
+            return HighlightHandler.CheckDocumentsTextEquality(Model, Syllable);
         }
     }
 }

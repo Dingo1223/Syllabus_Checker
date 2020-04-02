@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 using Xceed.Document.NET;
 using Xceed.Words.NET;
 using MessageBox = System.Windows.MessageBox;
@@ -38,7 +34,13 @@ namespace SyllabusChecker
 
     static class HighlightHandler
     {
-        public static bool checkDocumentsTextEquality(DocX model, DocX syllabus)
+        /// <summary>
+        /// Проверяет документы на сходство (?)
+        /// </summary>
+        /// <param name="model">Образец документа</param>
+        /// <param name="syllabus">Проверяемый документ</param>
+        /// <returns></returns>
+        public static bool CheckDocumentsTextEquality(DocX model, DocX syllabus)
         { 
             List<Error> errors = new List<Error>();
             List<ModelParagraph> usefulModelParagraphs = new List<ModelParagraph>();
@@ -49,11 +51,13 @@ namespace SyllabusChecker
             for (int i = 0; i < model.Paragraphs.Count; i++)
             {
                 currentModelParagraph = model.Paragraphs[i];
-                if (hasSomethingContent(currentModelParagraph.Text) && hasWhiteSegments(currentModelParagraph))
+                if (HasSomethingContent(currentModelParagraph.Text) && HasWhiteSegments(currentModelParagraph))
                 {
-                    ModelParagraph mp = new ModelParagraph();
-                    mp.paragraph = currentModelParagraph;
-                    mp.sourceIndex = i;
+                    ModelParagraph mp = new ModelParagraph
+                    {
+                        paragraph = currentModelParagraph,
+                        sourceIndex = i
+                    };
                     usefulModelParagraphs.Add(mp);
                 }
             }
@@ -65,12 +69,12 @@ namespace SyllabusChecker
             {
                 currentParagraph = syllabus.Paragraphs[i].Text;
 
-                if (!hasSomethingContent(currentParagraph)) continue;
+                if (!HasSomethingContent(currentParagraph)) continue;
 
                 currentModelParagraph = usefulModelParagraphs[k].paragraph; //paragraph
                 currentModelIndex = usefulModelParagraphs[k].sourceIndex;
 
-                bool paragraphsMatchUp = compareTwoParagraphs(currentModelParagraph, currentParagraph);
+                bool paragraphsMatchUp = CompareTwoParagraphs(currentModelParagraph, currentParagraph);
                 if (paragraphsMatchUp)
                 {
                     k++;
@@ -81,15 +85,15 @@ namespace SyllabusChecker
                     }
                     continue;
                 }
-                else if (!startsWithGreenHighligth(currentModelParagraph))
+                else if (!StartsWithGreenHighligth(currentModelParagraph))
                 {
                     bool previousNonemptyIsGreen = false;
                     int counter = currentModelIndex - 1;
-                    while (counter >= 0 && !hasSomethingContent(model.Paragraphs[counter].Text))
+                    while (counter >= 0 && !HasSomethingContent(model.Paragraphs[counter].Text))
                     {
                         counter--;
                     }
-                    if (counter >= 0 && endsWithGreenHighligth(model.Paragraphs[counter]))
+                    if (counter >= 0 && EndsWithGreenHighligth(model.Paragraphs[counter]))
                     {
                         previousNonemptyIsGreen = true;
                     }
@@ -119,16 +123,16 @@ namespace SyllabusChecker
             }
             else if (
                 lastSyllabusIndex != syllabus.Paragraphs.Count - 1 // syllabus doesn't ends
-                && !endsWithGreenHighligth(usefulModelParagraphs.Last().paragraph))
+                && !EndsWithGreenHighligth(usefulModelParagraphs.Last().paragraph))
             {
 
                 bool nextNonemptyIsGreen = false;
                 int counter = usefulModelParagraphs.Last().sourceIndex + 1;
-                while (counter <= syllabus.Paragraphs.Count && !hasSomethingContent(model.Paragraphs[counter].Text))
+                while (counter <= syllabus.Paragraphs.Count && !HasSomethingContent(model.Paragraphs[counter].Text))
                 {
                     counter++;
                 }
-                if (counter <= syllabus.Paragraphs.Count && startsWithGreenHighligth(model.Paragraphs[counter]))
+                if (counter <= syllabus.Paragraphs.Count && StartsWithGreenHighligth(model.Paragraphs[counter]))
                 {
                     nextNonemptyIsGreen = true;
                 }
@@ -137,7 +141,7 @@ namespace SyllabusChecker
                 bool hasNonemptyParagraph = false;
                 for(int i = lastSyllabusIndex + 1; i < syllabus.Paragraphs.Count; i++)
                 {
-                    if (hasSomethingContent(syllabus.Paragraphs[i].Text))
+                    if (HasSomethingContent(syllabus.Paragraphs[i].Text))
                     {
                         hasNonemptyParagraph = true;
                         break;
@@ -161,8 +165,12 @@ namespace SyllabusChecker
             else return false;
         }
 
-        //проверка есть ли белые части в параграфе
-        private static bool hasWhiteSegments(Paragraph p)
+        /// <summary>
+        /// Проверка, есть ли белые части в параграфе
+        /// </summary>
+        /// <param name="p">Параграф для проверки</param>
+        /// <returns></returns>
+        private static bool HasWhiteSegments(Paragraph p)
         {
             if (p.MagicText.Count == 0) return false;
             for (int i = 0; i < p.MagicText.Count; i++)
@@ -170,24 +178,30 @@ namespace SyllabusChecker
             return false;
         }
 
-        //проверка есть ли что-то в параграфе
-        private static bool hasSomethingContent(string text)
-        {
-            return text.Trim().Length > 0;
-        }
+        /// <summary>
+        /// Проверка, есть ли содеримое в параграфе
+        /// </summary>
+        /// <param name="text">Текст параграфа</param>
+        /// <returns></returns>
+        private static bool HasSomethingContent(string text) => text.Trim().Length > 0;
 
-        private static bool startsWithGreenHighligth(Paragraph p)
+        private static bool StartsWithGreenHighligth(Paragraph p)
         {
             return p.MagicText.Count > 0 && p.MagicText[0].formatting != null && p.MagicText[0].formatting.Highlight == Highlight.green;
         }
 
-        private static bool endsWithGreenHighligth(Paragraph p)
+        private static bool EndsWithGreenHighligth(Paragraph p)
         {
             return p.MagicText.Count > 0 && p.MagicText.Last().formatting != null && p.MagicText.Last().formatting.Highlight == Highlight.green;
         }
 
-        //Проверка на соответствие двух абзацев
-        private static bool compareTwoParagraphs(Paragraph p1, string p2)
+        /// <summary>
+        /// Проверка на соответствие двух параграфов
+        /// </summary>
+        /// <param name="p1">Первый параграф</param>
+        /// <param name="p2">Текст второго параграфа</param>
+        /// <returns></returns>
+        private static bool CompareTwoParagraphs(Paragraph p1, string p2)
         {
             List<ElementaryFragment> modelFragments = new List<ElementaryFragment>();
             string currentTextPart;

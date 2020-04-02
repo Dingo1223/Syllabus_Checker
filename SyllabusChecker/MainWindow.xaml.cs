@@ -87,30 +87,33 @@ namespace SyllabusChecker
             }
 
             Checker checker;
+
             //Запуск проверки
-            try
-            {
-                checker = new Checker(InputData);
-                ResultWindow rw = new ResultWindow(InputData.ResultFolderPath + "\\" +
-                    Path.GetFileNameWithoutExtension(InputData.SyllablePath) + @"_checked.docx", checker.ErrorsCount);
-                rw.ShowDialog();
-            }
-            catch (IOException ex)
-            {
-                MessageBox.Show(ex.Message + "\nЗакройте все приложения, использующие данный файл, чтобы продолжить.");
-                return;
-            }
-            catch (Exception ex)
+            if (rbSyllable.IsChecked == true) //если проверяетя рабочая программа
             {
                 try
                 {
-                    //тогда попробуем проверить через подсветку
-                    bool checkingResult = Checker.checkDocumentsEquality(InputData);
+                    checker = new Checker(InputData);
+                    ResultWindow rw = new ResultWindow(InputData.ResultFolderPath + "\\" +
+                        Path.GetFileNameWithoutExtension(InputData.SyllablePath) + @"_checked.docx", checker.ErrorsCount);
+                    rw.ShowDialog();
+                }
+                catch (IOException ex)
+                {
+                    MessageBox.Show(ex.Message + "\nЗакройте все приложения, использующие данный файл, чтобы продолжить.");
+                    return;
+                }
+            }
+            else if (rbOther.IsChecked == true) //если проверяется документ через подсветку
+            {
+                try
+                {
+                    bool checkingResult = Checker.CheckDocumentsEquality(InputData);
                     MessageBox.Show(checkingResult ? "Good" : "Bad");
                 }
-                catch (IOException ex2)
+                catch (IOException ex)
                 {
-                    MessageBox.Show(ex2.Message);
+                    MessageBox.Show(ex.Message);
                     return;
                 }
             }
