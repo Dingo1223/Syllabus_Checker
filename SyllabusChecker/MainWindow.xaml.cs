@@ -102,10 +102,18 @@ namespace SyllabusChecker
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
-                return;
+                try
+                {
+                    //тогда попробуем проверить через подсветку
+                    bool checkingResult = Checker.checkDocumentsEquality(InputData);
+                    MessageBox.Show(checkingResult ? "Good" : "Bad");
+                }
+                catch (IOException ex2)
+                {
+                    MessageBox.Show(ex2.Message);
+                    return;
+                }
             }
-            //checker.checkParagraphEquality();
         }
 
         /// <summary>

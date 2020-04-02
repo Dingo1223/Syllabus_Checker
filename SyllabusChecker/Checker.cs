@@ -33,6 +33,7 @@ namespace SyllabusChecker
         {
             Model = DocX.Load(inputData.ModelPath);
             Syllable = DocX.Load(inputData.SyllablePath);
+
             Dictionary<int, string> IndsTitle = CheckTitlePage();
 
             //Получаем разбитые на секции модель и РП
@@ -611,8 +612,9 @@ namespace SyllabusChecker
                     {
                         if (syllableSections[6].Paragraphs[i].Text != "")
                         {
+                            int x;
                             //Проверяем нумерацию разделов
-                            if (int.TryParse(syllableSections[6].Paragraphs[i].Text.Split(' ')[0], out int x))
+                            if (int.TryParse(syllableSections[6].Paragraphs[i].Text.Split(' ')[0], out x))
                             {
                                 if (x != counter + 1)
                                 {
@@ -676,8 +678,8 @@ namespace SyllabusChecker
                     int ind_lesson = 0, sum = 0;
                     for (int i = spaces_in_begin + 4; i < syllableSections[7].Paragraphs.Count - 4 - spaces_in_end; i += 4)
                     {
-                        int s = 0;
-                        bool isCorrect = int.TryParse(syllableSections[7].Paragraphs[i].Text, out int x) &&
+                        int s = 0, x, _;
+                        bool isCorrect = int.TryParse(syllableSections[7].Paragraphs[i].Text, out x) &&
                             int.TryParse(syllableSections[7].Paragraphs[i + 1].Text, out _) &&
                             (syllableSections[7].Paragraphs[i + 2].Text != "") &&
                             int.TryParse(syllableSections[7].Paragraphs[i + 3].Text, out s) &&
@@ -693,8 +695,9 @@ namespace SyllabusChecker
                         }
                     }
 
+                    int sum_syl;
                     if (int.TryParse(syllableSections[7].Paragraphs[syllableSections[7].Paragraphs.Count -
-                        spaces_in_end - 1].Text, out int sum_syl))
+                        spaces_in_end - 1].Text, out sum_syl))
                     {
                         int sum_model = int.Parse(modelSections[7].Paragraphs[modelSections[7].Paragraphs.Count -
                             spaces_in_end_model - 1].Text);
@@ -855,99 +858,11 @@ namespace SyllabusChecker
             return docSections;
         }
 
-        public bool checkParagraphEquality()
+        public static bool checkDocumentsEquality(InputData inputData)
         {
-            DocX model = this.Model,
-                syllabus = this.Syllable;
-
-
-            bool firstCase = this.compareTwoParagraphs(model.Sections[1].SectionParagraphs[15], syllabus.Sections[1].SectionParagraphs[15]);
-            return true;
-        }
-
-        //Проверка на соответствие двух абзацев
-        private bool compareTwoParagraphs(Paragraph p1, Paragraph p2)
-        {
-            List<Tuple<string, bool>> p1Array = new List<Tuple<string, bool>>();
-            string currentTextPart;
-            bool currentHightlight;
-
-            //разбираем абзац из шаблона по частям, отличающимся подсветкой
-            for (int i = 0; i < p1.MagicText.Count; i++)
-            {
-                currentHightlight = p1.MagicText[i].formatting.Highlight == Highlight.green;
-                currentTextPart = p1.MagicText[i].text;
-
-                if (i == 0 || p1Array.Last().Item2 != currentHightlight)
-                {
-                    p1Array.Add(new Tuple<string, bool>(currentTextPart, currentHightlight));
-                }
-                else
-                {
-                    p1Array[p1Array.Count - 1] = new Tuple<string, bool>(
-                        p1Array[p1Array.Count - 1].Item1 + currentTextPart,
-                        currentHightlight
-                    );
-                }
-            }
-
-            string p2Text = p2.Text;
-
-            for (int i = 0; i < p1Array.Count; i++)
-            {
-                if (p1Array[i].Item2) //зеленый
-                {
-                    if (i == p1Array.Count - 1)
-                    {
-                        return true;
-                    }
-                    else
-                    {
-                        continue;
-                    }
-                }
-                else
-                {
-                    int index = p2Text.IndexOf(p1Array[i].Item1);
-
-                    if (index == -1)
-                    {
-                        MessageBox.Show("Пропущен обязательный фрагмент: '" + p1Array[i].Item1 + "'");
-                        return false;
-                    }
-                    else
-                    {
-                        if (i != 0 && p1Array[i - 1].Item2) //до этого был зелёный фрагмент
-                        {
-                            p2Text = p2Text.Substring(index + p1Array[i].Item1.Length);
-                        }
-                        else
-                        {
-                            if (index == 0)
-                            {
-                                p2Text = p2Text.Substring(p1Array[i].Item1.Length);
-                            }
-                            MessageBox.Show("Лишний текст: '" + p2Text.Substring(0, index) + "'");
-                            return false;
-                        }
-                    }
-                }
-            }
-
-            return false;
-            //+разбить первый параграф на массив последовательностей [text, type].
-            //+пробежать по массиву и
-            //+  если незелёный, поискать indexOf.
-            //+    Если не найден, то возврат с сообщением: пропущен обязательный фрагмент ...
-            //+    Если найден и до этого обрабатывался зелёный фрагмент,
-            //+      то всё перед ним отнести в зелёное. А этот фрагмент и всё до него вырезать из строки
-            //+    Если найден и до этого ничего не было,
-            //+      то возврат с сообщением про лишний текст (выдать его)
-            //+      Если лишнего нет, то удаляем этот фрагмент
-            //+  если зелёный, то
-            //+    если последний фрагмент, то возвратить успех
-            //+    если дальше есть, то континью
-
+            DocX Model = DocX.Load(inputData.ModelPath);
+            DocX Syllable = DocX.Load(inputData.SyllablePath);
+            return HighlightHandler.checkDocumentsTextEquality(Model, Syllable);
         }
     }
 }
