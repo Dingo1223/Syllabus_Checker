@@ -795,7 +795,7 @@ namespace SyllabusChecker
         public List<DocSection> GetDocSections(Section doc)
         {
             //Получаем имена разделов (хранятся в ресурсах)
-            string names = Properties.Resources.NamesOfSections;
+            string names = ConfigurationManager.AppSettings["names_of_sections"];
             List<string> namesOfSections = names.Split(new string[] { "\n" },
                 StringSplitOptions.RemoveEmptyEntries).ToList<string>();
             int ind = 0;
