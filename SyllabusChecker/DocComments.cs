@@ -73,9 +73,7 @@ namespace SyllabusChecker
             comments.Save();
 
             paragraph.InsertBefore(new CommentRangeStart() { Id = id.ToString() }, paragraph.GetFirstChild<Run>());
-
             CommentRangeEnd cmtEnd = paragraph.InsertAfter(new CommentRangeEnd() { Id = id.ToString() }, paragraph.Elements().Last());
-
             paragraph.InsertAfter(new Run(new CommentReference() { Id = id.ToString() }), cmtEnd);
         }
     }

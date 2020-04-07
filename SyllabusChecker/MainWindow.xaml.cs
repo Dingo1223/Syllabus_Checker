@@ -39,7 +39,7 @@ namespace SyllabusChecker
         }
 
         /// <summary>
-        /// Обработка нажатия на кнопку выбора расположения готового файла рабочей программы
+        /// Обработка нажатия на кнопку выбора расположения проверяемого документа
         /// </summary>
         private void BtnSelectSyllablePath_Click(object sender, RoutedEventArgs e)
         {
@@ -55,7 +55,7 @@ namespace SyllabusChecker
         }
 
         /// <summary>
-        /// Обработка нажатия на кнопку выбора расположения проверенного файла рабочей программы
+        /// Обработка нажатия на кнопку выбора места сохранения проверенного документа
         /// </summary>
         private void BtnSelectResultFolder_Click(object sender, RoutedEventArgs e)
         {
@@ -77,35 +77,51 @@ namespace SyllabusChecker
         {
             if (!(new FileInfo(InputData.ModelPath).Exists) || (InputData.ModelPath == ""))
             {
-                MessageBox.Show("Файл модели рабочей программы не выбран или не существует");
+                MessageBox.Show("Файл модели документа не выбран или не существует");
                 return;
             }
             else if (!(new FileInfo(InputData.SyllablePath).Exists) || (InputData.SyllablePath == ""))
             {
-                MessageBox.Show("Проверяемый файл рабочей программы не выбран или не существует");
+                MessageBox.Show("Проверяемый файл не выбран или не существует");
                 return;
             }
 
             Checker checker;
+
             //Запуск проверки
-            try
+            if (rbSyllable.IsChecked == true) //Если проверяется рабочая программа
             {
-                checker = new Checker(InputData);
-                ResultWindow rw = new ResultWindow(InputData.ResultFolderPath + "\\" +
-                    Path.GetFileNameWithoutExtension(InputData.SyllablePath) + @"_checked.docx", checker.ErrorsCount);
-                rw.ShowDialog();
+                try
+                {
+                    checker = new Checker(InputData);
+                    ResultWindow rw = new ResultWindow(InputData.ResultFolderPath + "\\" +
+                        Path.GetFileNameWithoutExtension(InputData.SyllablePath) + @"_checked.docx", checker.ErrorsCount);
+                    rw.ShowDialog();
+                }
+                catch (IOException ex)
+                {
+                    MessageBox.Show(ex.Message + "\nЗакройте все приложения, использующие данный файл, чтобы продолжить.");
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                    return;
+                }
             }
-            catch (IOException ex)
+            else if (rbOther.IsChecked == true) //Если проверяется произвольный документ через подсветку
             {
-                MessageBox.Show(ex.Message + "\nЗакройте все приложения, использующие данный файл, чтобы продолжить.");
-                return;
+                try
+                {
+                    bool checkingResult = HighlightHandler.CheckDocumentsEquality(InputData);
+                    MessageBox.Show(checkingResult ? "Good" : "Bad");
+                }
+                catch (IOException ex)
+                {
+                    MessageBox.Show(ex.Message);
+                    return;
+                }
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-                return;
-            }
-            //checker.checkParagraphEquality();
         }
 
         /// <summary>
