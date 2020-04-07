@@ -38,7 +38,14 @@
                 HorizontalAlignment="Center" VerticalAlignment="Top" Width="160"
                 Click="BtnCheckSyllableStart_Click"/>
 
-         <!--Сюда можно будет добавить краткое руководство для пользователя-->
+        <TextBlock Margin="20, 232, 4, 4" Text="Тип проверяемого документа:"
+                   HorizontalAlignment="Left" VerticalAlignment="Top"/>
+        <RadioButton x:Name="rbSyllable" Margin="20, 252, 4, 4" Content="Рабочая программа" GroupName="rb"
+                     HorizontalAlignment="Left" VerticalAlignment="Top" IsChecked="True"/>
+        <RadioButton x:Name="rbOther" Margin="164, 252, 4, 4" Content="Другой документ" GroupName="rb"
+                     HorizontalAlignment="Left" VerticalAlignment="Top" IsChecked="False"/>
+
+        <!--Сюда можно будет добавить краткое руководство для пользователя-->
         <Button x:Name="BtnAbout" Margin="4, 4, 4, 4" Content="О программе..."
                 HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="100" Visibility="Hidden"/>
     </Grid>
