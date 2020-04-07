@@ -469,7 +469,7 @@ namespace SyllabusChecker
                                         {
                                             for (int g = 0; g < syllableSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs.Count; g++)
                                             {
-                                                { errorsBody.Add(syllableSections[3].StartedAt + i - syllableSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs.Count + g, "Description placeholder"); }
+                                                { errorsBody.Add(syllableSections[3].StartedAt + i - syllableSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs.Count + g, "Ошибка: отсутствуют некоторые из элементов: 'Знать:' 'Уметь:' 'Владеть:'"); }
                                             }
                                         }
                                     }
@@ -481,11 +481,10 @@ namespace SyllabusChecker
                                             for (int g = 0; g < modelSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs.Count; g++)
                                             {
                                                 if (modelSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs[g].Text != syllableSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs[g].Text)
-                                                { errorsBody.Add(syllableSections[3].StartedAt + i, "Description placeholder"); m++; i++; }
+                                                { errorsBody.Add(syllableSections[3].StartedAt + i, "Несоответствие с макетом, может быть вы имели в виду " + modelSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs[g].Text); m++; i++; }
                                                 while (m < maxSylMod - 1)
                                                 {
-
-                                                    errorsBody.Add(syllableSections[3].StartedAt + i - 1, "Description placeholder");
+                                                    errorsBody.Add(syllableSections[3].StartedAt + i - 1, "Несоответствие с макетом");
                                                     i++;
                                                     m++;
                                                 }
@@ -495,7 +494,7 @@ namespace SyllabusChecker
                                 }
                             }
                         }
-                        else if (modelSections[3].Paragraphs[pId].FollowingTables[0].ColumnCount == 3)//If the table has 3 columns
+                        else if (modelSections[3].Paragraphs[pId].FollowingTables[0].ColumnCount == 3)//если 3 столбца
                         {
                             for (int y = 0; y < modelSections[3].Paragraphs[pId].FollowingTables[0].Rows.Count; y++)//бегаем по строкам
                             {
@@ -506,7 +505,7 @@ namespace SyllabusChecker
                                         for (int g = 0; g < modelSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs.Count; g++)
                                         {
                                             if (modelSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs[g].Text != syllableSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs[g].Text)
-                                            { errorsBody.Add(syllableSections[3].StartedAt + i, "Description placeholder"); }
+                                            { errorsBody.Add(syllableSections[3].StartedAt + i, "Несоответствие с макетом, может быть вы имели в виду " + modelSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs[g].Text); }
                                             i++;
                                         }
                                     }
@@ -525,7 +524,7 @@ namespace SyllabusChecker
                                         {
                                             for (int g = 0; g < syllableSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs.Count; g++)
                                             {
-                                                errorsBody.Add(syllableSections[3].StartedAt + i - syllableSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs.Count + g, "Description placeholder");
+                                                errorsBody.Add(syllableSections[3].StartedAt + i - syllableSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs.Count + g, "Ошибка: отсутствуют некоторые из элементов: 'Знать:' 'Уметь:' 'Владеть:'");
                                             }
                                         }
                                     }
@@ -535,8 +534,7 @@ namespace SyllabusChecker
                                         {
                                             for (int g = 0; g < syllableSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs.Count; g++)
                                             {
-
-                                                errorsBody.Add(syllableSections[3].StartedAt + i, "Description placeholder");
+                                                errorsBody.Add(syllableSections[3].StartedAt + i, "Несоответствие с макетом");
                                                 i++;
                                             }
                                         }
@@ -545,22 +543,20 @@ namespace SyllabusChecker
                                             for (int g = 0; g < modelSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs.Count; g++)
                                             {
                                                 if (modelSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs[g].Text != syllableSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs[g].Text)
-                                                { errorsBody.Add(syllableSections[3].StartedAt + i, "Description placeholder"); i++; }
+                                                { errorsBody.Add(syllableSections[3].StartedAt + i, "Несоответствие с макетом, может быть вы имели в виду " + modelSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs[g].Text); i++; }
                                             }
                                             int m = 0;
                                             while (m < syllableSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs.Count - modelSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs.Count)
-                                            { errorsBody.Add(syllableSections[3].StartedAt + i, "Description placeholder"); m++; i++; }
+                                            { errorsBody.Add(syllableSections[3].StartedAt + i, "Несоответствие с макетом"); m++; i++; }
                                         }
                                         else
                                         {
                                             for (int g = 0; g < modelSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs.Count; g++)
                                             {
                                                 if (modelSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs[g].Text != syllableSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs[g].Text)
-                                                { errorsBody.Add(syllableSections[3].StartedAt + i, "Description placeholder"); i++; }
+                                                { errorsBody.Add(syllableSections[3].StartedAt + i, "Несоответствие с макетом"); i++; }
                                                 else
-                                                {
-                                                    i++;
-                                                }
+                                                { i++; }
                                             }
                                         }
                                     }
@@ -581,7 +577,7 @@ namespace SyllabusChecker
                             {
                                 if (syllableSections[3].Paragraphs[i + 1].Text != modelSections[3].Paragraphs[i + 1].Text)
                                 {
-                                    errorsBody.Add(syllableSections[3].StartedAt + i + 1, "Description placeholder");
+                                    errorsBody.Add(syllableSections[3].StartedAt + i + 1, "Несоответствие с макетом, может быть вы имели в виду "+ modelSections[3].Paragraphs[i + 1].Text);
                                 }
                             }
                             i++;
@@ -599,7 +595,248 @@ namespace SyllabusChecker
             }
 
             //Section 5 = 4.1 Структура дисциплины
+            {
+                List<int> errCount = new List<int>();
+                List<Table> modelTables = Model.Tables;
+                List<Table> syllableTables = Syllable.Tables;
+                int numParagraphInModel = 0, numOfTable = 3, ind = 0;
+                bool b = false;
+                for (int i = 0; i < syllableSections[5].Paragraphs.Count - 1; i++)//по параграфам в РП
+                {
+                    if (i == 0)
+                    {
+                        if (syllableSections[5].Paragraphs[i].Text != modelSections[5].Paragraphs[numParagraphInModel].Text)
+                        {
+                            errorsBody.Add(syllableSections[5].StartedAt + i, "Ошибка, необходимо " + modelSections[5].Paragraphs[numParagraphInModel].Text);
+                        }
+                    }
+                    else if (syllableSections[5].Paragraphs[i-1].FollowingTables != null)//если начинается таблица
+                    {
+                        if (numOfTable == 3)//если первая таблица
+                        {
+                            for (int j = 0; j < syllableTables[numOfTable].Rows.Count; j++)
+                            {
+                                for (int f = 0; f < syllableTables[numOfTable].Rows[j].Cells.Count; f++)
+                                {
+                                    for (int h = 0; h < syllableTables[numOfTable].Rows[j].Cells[f].Paragraphs.Count; h++)
+                                    {
+                                        if (j == modelTables[numOfTable].Rows.Count - 2)
+                                        {
+                                            i++;
+                                            
+                                            while (ind < modelTables[numOfTable].Rows[j].Paragraphs.Count)
+                                            {
+                                                numParagraphInModel++; ind++;
+                                            }
+                                        }
+                                        else if (syllableTables[numOfTable].Rows[j].Cells[f].Paragraphs[h].Text != modelTables[numOfTable].Rows[j].Cells[f].Paragraphs[h].Text)
+                                        {
+                                            i++; numParagraphInModel++;
+                                            errorsBody.Add(syllableSections[5].StartedAt + i - 1, "Ошибка, необходимо " + modelTables[numOfTable].Rows[j].Cells[f].Paragraphs[h].Text);
+                                        }
+                                        else { i++; numParagraphInModel++; }
+                                    }
+                                }
 
+                            }
+                            numOfTable++;
+                        }
+                        else if (numOfTable == 4 && modelTables.Count == 7)//если вторая таблица
+                        {
+                            bool skip = false;
+                            int jM = 0;
+                            for (int j = 0; j < syllableTables[numOfTable].Rows.Count; j++)
+                            {
+                                for (int g = 0; g < syllableTables[numOfTable].Rows[j].Cells.Count; g++)
+                                {
+                                    for (int f = 0; f < syllableTables[numOfTable].Rows[j].Cells[g].Paragraphs.Count; f++)
+                                    {
+                                        if (j > 2 && j < syllableTables[numOfTable].Rows.Count - 1)
+                                        {
+                                            i++;
+                                            for (int d = 3; (d < modelTables[numOfTable].Rows.Count - 1) && skip == false; d++)
+                                            {
+                                                jM++;
+                                                for (int par = 0; par < modelTables[numOfTable].Rows[d].Paragraphs.Count; par++)
+                                                {
+                                                    numParagraphInModel++;
+                                                }
+                                            }
+                                            skip = true;
+                                        }
+                                        else if (syllableTables[numOfTable].Rows[j].Cells[g].Paragraphs[f].Text != modelTables[numOfTable].Rows[jM].Cells[g].Paragraphs[f].Text)
+                                        {
+                                            i++; numParagraphInModel++;
+                                            errorsBody.Add(syllableSections[5].StartedAt + i - 1, "Ошибка, необходимо " + modelTables[numOfTable].Rows[jM].Cells[g].Paragraphs[f].Text);
+                                        }
+                                        else { i++; numParagraphInModel++; }
+                                    }
+                                }
+                                if (!(j > 2 && j < syllableTables[numOfTable].Rows.Count - 1))
+                                {
+                                    jM++;
+                                }
+                            }
+                            numOfTable++;
+                        }
+                        
+                        else if (numOfTable == modelTables.Count - 2)//если третья таблица
+                        {
+                            bool skip = false;
+                            int jM = 0;
+                            for (int j = 0; j < syllableTables[numOfTable].Rows.Count; j++)
+                            {
+                                for (int g = 0; g < syllableTables[numOfTable].Rows[j].Cells.Count; g++)
+                                {
+                                    for (int f = 0; f < syllableTables[numOfTable].Rows[j].Cells[g].Paragraphs.Count; f++)
+                                    {
+                                        if (j > 2 && j < syllableTables[numOfTable].Rows.Count - 2)
+                                        {
+                                            i++;
+                                            for (int d = 3; (d < modelTables[numOfTable].Rows.Count - 2) && skip == false; d++)
+                                            {
+                                                jM++;
+                                                for (int par = 0; par < modelTables[numOfTable].Rows[d].Paragraphs.Count; par++)
+                                                {
+                                                    numParagraphInModel++;
+                                                }
+                                            }
+                                            skip = true;
+                                        }
+                                        else if (syllableTables[numOfTable].Rows[j].Cells[g].Paragraphs[f].Text != modelTables[numOfTable].Rows[jM].Cells[g].Paragraphs[f].Text)
+                                        {
+                                            i++; numParagraphInModel++;
+                                            errorsBody.Add(syllableSections[5].StartedAt + i - 1, "Ошибка, необходимо " + modelTables[numOfTable].Rows[jM].Cells[g].Paragraphs[f].Text);
+                                        }
+                                        else { i++; numParagraphInModel++; }
+                                    }
+                                }
+                                if (!(j > 2 && j < syllableTables[numOfTable].Rows.Count - 2))
+                                {
+                                    jM++;
+                                }
+                            }
+                            numOfTable++;
+                        }
+                    }
+                    else
+                    {
+                        if (syllableSections[5].Paragraphs[i].Text != modelSections[5].Paragraphs[numParagraphInModel].Text)
+                        {
+                            errorsBody.Add(syllableSections[5].StartedAt + i - 1, "Ошибка, необходимо " + modelSections[5].Paragraphs[numParagraphInModel].Text);
+                        }
+                    }
+                    numParagraphInModel++;
+                }
+                   
+                
+
+
+                //int mi = 1, numTab = 0, mTab = 0, mRow = 0;
+                //if (syllableSections[5].Paragraphs[0].Text != modelSections[5].Paragraphs[0].Text)
+                //{
+                //    errorsBody.Add(syllableSections[5].StartedAt, "Ошибка в названии, необходимо " + modelSections[5].Paragraphs[0].Text);
+                //}
+                //for (int i = 1; i < syllableSections[5].Paragraphs.Count; i++)//параграфы в секции РП
+                //{
+                //    if (syllableSections[5].Paragraphs[i - 1].FollowingTables != null && i - 1 == 2)//если начинается первая таблица
+                //    {
+                //        while(modelSections[5].Paragraphs[mTab].FollowingTables == null)
+                //        {
+                //            mTab++;
+                //        }
+                //        numTab = i - 1;
+                //        for (int k = 0; k < syllableSections[5].Paragraphs[numTab].FollowingTables[0].Rows.Count; k++)//по строкам
+                //        {
+                //            mRow++;
+                //            for (int j = 0; j < syllableSections[5].Paragraphs[numTab].FollowingTables[0].Rows[k].Cells.Count; j++)//по ячейкам
+                //            {
+                //                if ((k == 8 && numTab == 2))//если это ячейка где самост. работа
+                //                {
+                //                    for (int h = 0; h < syllableSections[5].Paragraphs[numTab].FollowingTables[0].Rows[k].Cells[j].Paragraphs.Count; h++)
+                //                    {
+                //                        i++;
+                //                    }
+                //                }
+                //                else if (syllableSections[5].Paragraphs[numTab].FollowingTables[0].Rows[k].Cells[j].Paragraphs.Count > modelSections[5].Paragraphs[mTab].FollowingTables[0].Rows[mRow].Cells[j].Paragraphs.Count)
+                //                {
+                //                    for (int g = 0; g < syllableSections[5].Paragraphs[numTab].FollowingTables[0].Rows[k].Cells[j].Paragraphs.Count; g++)
+                //                    {
+                //                        i++;
+                //                        for (int h = 0; h < modelSections[5].Paragraphs[mTab].FollowingTables[0].Rows[mRow].Cells[j].Paragraphs.Count; h++)
+                //                        {
+                //                            if (modelSections[5].Paragraphs[mTab].FollowingTables[0].Rows[mRow].Cells[j].Paragraphs[h].Text == syllableSections[5].Paragraphs[numTab].FollowingTables[0].Rows[k].Cells[j].Paragraphs[g].Text)
+                //                            {
+                //                                errCount.Add(i);
+                //                                break;
+                //                            }
+                //                        }
+                //                    }
+                //                    for (int g = 0; g < syllableSections[5].Paragraphs[numTab].FollowingTables[0].Rows[k].Cells[j].Paragraphs.Count; g++)
+                //                    {
+                //                        if (errCount.Contains(Math.Abs(g - i)))
+                //                        {
+                //                            errorsBody.Add(syllableSections[5].StartedAt + Math.Abs(g - i), "Ошибка в тексте, либо этого абзаца не должно быть");
+                //                        }
+                //                    }
+
+                //                }//если в РП больше параграфов чем в макете
+
+                //                else if (syllableSections[5].Paragraphs[numTab].FollowingTables[0].Rows[k].Cells[j].Paragraphs.Count < modelSections[5].Paragraphs[mTab].FollowingTables[0].Rows[mRow].Cells[j].Paragraphs.Count)//если в РП меньше параграфов чем в макете
+                //                {
+                //                    for (int g = 0; g < syllableSections[5].Paragraphs[numTab].FollowingTables[0].Rows[k].Cells[j].Paragraphs.Count; g++)
+                //                    {
+                //                        i++;
+                //                        for (int h = 0; h < modelSections[5].Paragraphs[mTab].FollowingTables[0].Rows[mRow].Cells[j].Paragraphs.Count; h++)
+                //                        {
+                //                            if (modelSections[5].Paragraphs[mTab].FollowingTables[0].Rows[mRow].Cells[j].Paragraphs[h].Text == syllableSections[5].Paragraphs[numTab].FollowingTables[0].Rows[k].Cells[j].Paragraphs[g].Text)
+                //                            {
+                //                                errCount.Add(i);
+                //                                break;
+                //                            }
+                //                        }
+                //                    }
+
+                //                    for (int g = 0; g < syllableSections[5].Paragraphs[numTab].FollowingTables[0].Rows[k].Cells[j].Paragraphs.Count; g++)
+                //                    {
+                //                        if (!errCount.Contains(Math.Abs(g - i)))
+                //                        {
+                //                            errorsBody.Add(syllableSections[5].StartedAt + Math.Abs(g - i), "Ошибка в тексте, либо этого тут быть не должно");
+                //                        }
+                //                    }
+                //                }
+                //                else if (syllableSections[5].Paragraphs[numTab].FollowingTables[0].Rows[k].Cells[j].Paragraphs.Count == modelSections[5].Paragraphs[mTab].FollowingTables[0].Rows[k].Cells[j].Paragraphs.Count)//если по количеству все нормально(количество параграфов совпадает), то проверяем их между собой
+                //                {
+                //                    for (int g = 0; g < syllableSections[5].Paragraphs[numTab].FollowingTables[0].Rows[k].Cells[j].Paragraphs.Count; g++)
+                //                    {
+                //                        if (syllableSections[5].Paragraphs[numTab].FollowingTables[0].Rows[k].Cells[j].Paragraphs[g].Text != modelSections[5].Paragraphs[mTab].FollowingTables[0].Rows[k].Cells[j].Paragraphs[g].Text)
+                //                        {
+                //                            errorsBody.Add(syllableSections[5].StartedAt + i, "Ошибка в тексте, должно быть " + modelSections[5].Paragraphs[mTab].FollowingTables[0].Rows[k].Cells[j].Paragraphs[g].Text);
+                //                        }
+                //                        i++; mi++;
+                //                    }
+                //                }
+                //            }
+                //        }
+                //    }
+                //    else if(syllableSections[5].Paragraphs[i - 1].FollowingTables != null)//другие таблицы
+                //    {
+
+                //    }
+                //    else
+                //    {
+                //        for (int k = 0; (syllableSections[5].Paragraphs[i].FollowingTables == null) && (i <126); k++)//параграфы между таблицами
+                //        {
+                //            if(syllableSections[5].Paragraphs[i].Text != modelSections[5].Paragraphs[mi].Text)
+                //            {
+                //                errorsBody.Add(syllableSections[5].StartedAt + i, "Ошибка в тексте, должно быть " + modelSections[5].Paragraphs[mTab].Text);
+                //            }
+                //            i++; mTab++; mi++;
+                //        }
+                //    }
+                //}
+
+            }
 
             //Section 6 = 4.2 Содержание разделов дисциплины
             //Должна быть заполнена
@@ -732,33 +969,33 @@ namespace SyllabusChecker
             //Section 12 = 5.4 Интернет - ресурсы
             //Section 13 = 5.5 Программное обеспечение, профессиональные базы данных и информационные справочные системы
             // Должны быть заполнены (не можем проверить содержимое дословно)
-            for (int i = 9; i <= 13; i++)
-            {
-                if (!IsSectionHasContent(syllableSections[i]))
-                {
-                    errorsBody.Add(syllableSections[i].StartedAt, "Секция не заполнена");
-                }
-            }
+            //for (int i = 9; i <= 13; i++)
+            //{
+            //    if (!IsSectionHasContent(syllableSections[i]))
+            //    {
+            //        errorsBody.Add(syllableSections[i].StartedAt, "Секция не заполнена");
+            //    }
+            //}
 
             //Section 14 = 6 Материально - техническое обеспечение дисциплины
-            {
-                //Сравниваем абзацы, которые должны совпадать с макетом
-                try
-                {
-                    for (int i = 0; i < 4; i++)
-                    {
-                        if (syllableSections[14].Paragraphs[i].Text != modelSections[14].Paragraphs[i].Text)
-                        {
-                            errorsBody.Add(syllableSections[14].StartedAt + i,
-                                "Несовпадение с макетом, должно быть: " + modelSections[14].Paragraphs[i].Text);
-                        }
-                    }
-                }
-                catch //Если не хватает обязательных абзацев
-                {
-                    errorsBody.Add(syllableSections[14].StartedAt, "Раздел не заполнен полностью");
-                }
-            }
+            //{
+            //    //Сравниваем абзацы, которые должны совпадать с макетом
+            //    try
+            //    {
+            //        for (int i = 0; i < 4; i++)
+            //        {
+            //            if (syllableSections[14].Paragraphs[i].Text != modelSections[14].Paragraphs[i].Text)
+            //            {
+            //                errorsBody.Add(syllableSections[14].StartedAt + i,
+            //                    "Несовпадение с макетом, должно быть: " + modelSections[14].Paragraphs[i].Text);
+            //            }
+            //        }
+            //    }
+            //    catch //Если не хватает обязательных абзацев
+            //    {
+            //        errorsBody.Add(syllableSections[14].StartedAt, "Раздел не заполнен полностью");
+            //    }
+            //}
 
             return errorsBody;
         }
