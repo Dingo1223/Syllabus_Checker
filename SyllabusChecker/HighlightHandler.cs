@@ -35,13 +35,25 @@ namespace SyllabusChecker
     static class HighlightHandler
     {
         /// <summary>
+        /// Проверяет два документа на соответствие (подсветка)
+        /// </summary>
+        /// <param name="inputData">Выбранные пользователем расположения файлов</param>
+        /// <returns></returns>
+        public static bool CheckDocumentsEquality(InputData inputData)
+        {
+            DocX Model = DocX.Load(inputData.ModelPath);
+            DocX Syllable = DocX.Load(inputData.SyllablePath);
+            return HighlightHandler.CheckDocumentsTextEquality(Model, Syllable);
+        }
+
+        /// <summary>
         /// Проверяет документы на сходство (?)
         /// </summary>
         /// <param name="model">Образец документа</param>
         /// <param name="syllabus">Проверяемый документ</param>
         /// <returns></returns>
         public static bool CheckDocumentsTextEquality(DocX model, DocX syllabus)
-        { 
+        {
             List<Error> errors = new List<Error>();
             List<ModelParagraph> usefulModelParagraphs = new List<ModelParagraph>();
             Paragraph currentModelParagraph;
@@ -51,7 +63,7 @@ namespace SyllabusChecker
             for (int i = 0; i < model.Paragraphs.Count; i++)
             {
                 currentModelParagraph = model.Paragraphs[i];
-                if (HasSomethingContent(currentModelParagraph.Text) && HasWhiteSegments(currentModelParagraph))
+                if (HasSomeContent(currentModelParagraph.Text) && HasWhiteSegments(currentModelParagraph))
                 {
                     ModelParagraph mp = new ModelParagraph
                     {
@@ -69,7 +81,7 @@ namespace SyllabusChecker
             {
                 currentParagraph = syllabus.Paragraphs[i].Text;
 
-                if (!HasSomethingContent(currentParagraph)) continue;
+                if (!HasSomeContent(currentParagraph)) continue;
 
                 currentModelParagraph = usefulModelParagraphs[k].paragraph; //paragraph
                 currentModelIndex = usefulModelParagraphs[k].sourceIndex;
@@ -89,7 +101,7 @@ namespace SyllabusChecker
                 {
                     bool previousNonemptyIsGreen = false;
                     int counter = currentModelIndex - 1;
-                    while (counter >= 0 && !HasSomethingContent(model.Paragraphs[counter].Text))
+                    while (counter >= 0 && !HasSomeContent(model.Paragraphs[counter].Text))
                     {
                         counter--;
                     }
@@ -105,9 +117,9 @@ namespace SyllabusChecker
                         error.paragraph = currentParagraph;
                         error.index = i;
                         error.type = "Undeclared text in Syllabus";
-                        errors.Add(error); 
+                        errors.Add(error);
                     }
-                }       
+                }
                 else continue;
             }
 
@@ -121,14 +133,12 @@ namespace SyllabusChecker
                 error.type = "Missing required paragraph";
                 errors.Add(error);
             }
-            else if (
-                lastSyllabusIndex != syllabus.Paragraphs.Count - 1 // syllabus doesn't ends
+            else if (lastSyllabusIndex != syllabus.Paragraphs.Count - 1 // syllabus doesn't ends
                 && !EndsWithGreenHighligth(usefulModelParagraphs.Last().paragraph))
             {
-
                 bool nextNonemptyIsGreen = false;
                 int counter = usefulModelParagraphs.Last().sourceIndex + 1;
-                while (counter <= syllabus.Paragraphs.Count && !HasSomethingContent(model.Paragraphs[counter].Text))
+                while (counter <= syllabus.Paragraphs.Count && !HasSomeContent(model.Paragraphs[counter].Text))
                 {
                     counter++;
                 }
@@ -139,18 +149,18 @@ namespace SyllabusChecker
 
 
                 bool hasNonemptyParagraph = false;
-                for(int i = lastSyllabusIndex + 1; i < syllabus.Paragraphs.Count; i++)
+                for (int i = lastSyllabusIndex + 1; i < syllabus.Paragraphs.Count; i++)
                 {
-                    if (HasSomethingContent(syllabus.Paragraphs[i].Text))
+                    if (HasSomeContent(syllabus.Paragraphs[i].Text))
                     {
                         hasNonemptyParagraph = true;
                         break;
                     }
                 }
 
-                if(hasNonemptyParagraph && !nextNonemptyIsGreen)
+                if (hasNonemptyParagraph && !nextNonemptyIsGreen)
                 {
-                    MessageBox.Show("Лишний текст в РП! Абзац: " + lastSyllabusIndex.ToString() + " -- " + syllabus.Paragraphs[lastSyllabusIndex].Text);
+                    MessageBox.Show("Лишний текст в документе! Абзац: " + lastSyllabusIndex.ToString() + " -- " + syllabus.Paragraphs[lastSyllabusIndex].Text);
                     Error error;
                     error.paragraph = syllabus.Paragraphs[lastSyllabusIndex].Text;
                     error.index = lastSyllabusIndex;
@@ -174,7 +184,11 @@ namespace SyllabusChecker
         {
             if (p.MagicText.Count == 0) return false;
             for (int i = 0; i < p.MagicText.Count; i++)
-                if (p.MagicText[i].formatting == null || p.MagicText[i].formatting.Highlight != Highlight.green) return true;
+            {
+                if (p.MagicText[i].formatting == null || p.MagicText[i].formatting.Highlight != Highlight.green)
+                    return true;
+            }
+
             return false;
         }
 
@@ -183,17 +197,13 @@ namespace SyllabusChecker
         /// </summary>
         /// <param name="text">Текст параграфа</param>
         /// <returns></returns>
-        private static bool HasSomethingContent(string text) => text.Trim().Length > 0;
+        private static bool HasSomeContent(string text) => text.Trim().Length > 0;
 
-        private static bool StartsWithGreenHighligth(Paragraph p)
-        {
-            return p.MagicText.Count > 0 && p.MagicText[0].formatting != null && p.MagicText[0].formatting.Highlight == Highlight.green;
-        }
+        private static bool StartsWithGreenHighligth(Paragraph p) => 
+            p.MagicText.Count > 0 && p.MagicText[0].formatting != null && p.MagicText[0].formatting.Highlight == Highlight.green;
 
-        private static bool EndsWithGreenHighligth(Paragraph p)
-        {
-            return p.MagicText.Count > 0 && p.MagicText.Last().formatting != null && p.MagicText.Last().formatting.Highlight == Highlight.green;
-        }
+        private static bool EndsWithGreenHighligth(Paragraph p) => 
+            p.MagicText.Count > 0 && p.MagicText.Last().formatting != null && p.MagicText.Last().formatting.Highlight == Highlight.green;
 
         /// <summary>
         /// Проверка на соответствие двух параграфов
@@ -208,7 +218,7 @@ namespace SyllabusChecker
             bool currentHightlight;
             ElementaryFragment currentFragment;
 
-            //разбираем абзац из шаблона по частям, отличающимся подсветкой
+            //Разбираем абзац из шаблона по частям, отличающимся подсветкой
             for (int i = 0; i < p1.MagicText.Count; i++)
             {
                 currentHightlight = p1.MagicText[i].formatting != null && p1.MagicText[i].formatting.Highlight == Highlight.green;

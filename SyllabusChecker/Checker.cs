@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Configuration;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -33,13 +34,18 @@ namespace SyllabusChecker
             Model = DocX.Load(inputData.ModelPath);
             Syllable = DocX.Load(inputData.SyllablePath);
 
+            //Проверка титульника
             Dictionary<int, string> IndsTitle = CheckTitlePage();
 
             //Получаем разбитые на секции модель и РП
+            if (Model.Sections.Count < 2)
+            {
+                throw new Exception("Нарушен формат документа: отсутствует разбиение на секции. Используйте другой режим проверки");
+            }
             List<DocSection> ModelSections = GetDocSections(Model.Sections[1]);
             List<DocSection> SyllableSections = GetDocSections(Syllable.Sections[1]);
 
-            //Дальше надо их проверять
+            //Проверка секций РП (кроме титульника)
             Dictionary<int, string> IndsBody = CheckSyllableSections(ModelSections, SyllableSections);
 
             //Создание результирующего документа
@@ -59,20 +65,22 @@ namespace SyllabusChecker
             string path = Path.Combine(inputData.ResultFolderPath,
                 Path.GetFileNameWithoutExtension(inputData.SyllablePath) + "_checked.docx");
 
-            //Размечаем титульник
+            //Размечаем титульник -- отмечаем ошибки жёлтой подсветкой
             foreach (int ind in errorsTitle.Keys)
             {
                 Syllable.Sections[0].SectionParagraphs[ind].Highlight(Highlight.yellow);
             }
 
-            //Размечаем остальное
+            //Размечаем остальное -- отмечаем ошибки жёлтой подсветкой
             foreach (int ind in errorsBody.Keys)
             {
                 Syllable.Sections[1].SectionParagraphs[ind].Highlight(Highlight.yellow);
             }
 
+            //Сохраняем новый файл РП, с подсветкой
             Syllable.SaveAs(path);
-
+            
+            //Добавляем комментарии об ошибках
             DocComments.AddComments(errorsTitle, errorsBody, Syllable.Sections[0].SectionParagraphs.Count, path);
         }
 
@@ -89,18 +97,12 @@ namespace SyllabusChecker
 
             for (int i = 0; i < title_model.SectionParagraphs.Count; i++)
             {
-                if (title_model.SectionParagraphs[i].Text == "")
-                {
-                    continue;
-                }
+                if (title_model.SectionParagraphs[i].Text == "") continue;
 
                 for (int j = ind; j < title_syllable.SectionParagraphs.Count; j++)
                 {
                     ind++;
-                    if (title_syllable.SectionParagraphs[j].Text == "")
-                    {
-                        continue;
-                    }
+                    if (title_syllable.SectionParagraphs[j].Text == "") continue;
 
                     if (title_model.SectionParagraphs[i].Text != title_syllable.SectionParagraphs[j].Text)
                     {
@@ -124,7 +126,6 @@ namespace SyllabusChecker
             return errorsTitle;
         }
 
-        //Проверка рабочей программы, по разделам
         /// <summary>
         /// Проверка рабочей программы, по разделам
         /// </summary>
@@ -141,7 +142,7 @@ namespace SyllabusChecker
 
             //Section 0 = Рабочая программа рассмотрена и утверждена на заседании кафедры
             {
-                //поскольку игнорируем пустые строки, избавляемся от них
+                //Поскольку игнорируем пустые строки, избавляемся от них
                 int tempForModel = 0, tempForSyllable = 0;
 
                 for (int i = 0; i < modelSections[0].Paragraphs.Count; i++)
@@ -179,9 +180,9 @@ namespace SyllabusChecker
                     }
                 }
 
-                List<int> errorIndexModel = new List<int>();
-                //проверяем, что все обязательные строки присутствуют
-                int temp9 = 0, temp18 = 0;
+                //List<int> errorIndexModel = new List<int>();
+                //Проверяем, что все обязательные строки присутствуют
+                int temp9 = 0; // temp18 = 0;
                 for (int i = 0; i < tempForModel; i++)
                 {
                     if ((i >= 0 && i <= 7) || i == 9 || (i >= 11 && i <= 19) || (i >= 21 && i <= 24))
@@ -199,10 +200,10 @@ namespace SyllabusChecker
                             {
                                 temp9 = k;
                             }
-                            if (i == 18)
-                            {
-                                temp18 = k;
-                            }
+                            //if (i == 18)
+                            //{
+                            //    temp18 = k;
+                            //}
                         }
                         else
                         {
@@ -210,7 +211,7 @@ namespace SyllabusChecker
                         }
                     }
                 }
-                //поскольку у нас есть одинаковые строки, то проверяем начилие вторых одинаковых строк отдельно
+                //Поскольку у нас есть одинаковые строки, то проверяем начилие вторых одинаковых строк отдельно
                 {
                     int k = tempForSyllable - 1;
                     while (k != -1 && model[11, 0] != syllable[k, 0])
@@ -255,11 +256,10 @@ namespace SyllabusChecker
                         {
                             if (model[i, 2] == "0")
                             {
-                                //такой строки нет, говорим об этом. Будет отмечена первая строка в документе
+                                //Такой строки нет, говорим об этом. Будет отмечена первая строка в документе
                                 if (!errorsBody.ContainsKey(int.Parse(syllable[j, 1])))
                                 {
                                     errorsBody.Add(int.Parse(syllable[j, 1]), "Несовпадение с макетом, должно быть: " + model[i, 0]);
-
                                 }
                                 i++;
                             }
@@ -267,11 +267,11 @@ namespace SyllabusChecker
                             {
                                 if (model[i, 2] == "1" && model[i, 0] != syllable[j, 0])
                                 {
+                                    //Ошибка, что строка неправильная
                                     if (!errorsBody.ContainsKey(int.Parse(syllable[j, 1])))
                                     {
                                         errorsBody.Add(int.Parse(syllable[j, 1]), "Несовпадение с макетом, должно быть: " + model[i, 0]);
                                     }
-                                    //ошибка, что строка неправильная
                                     j++;
                                 }
                             }
@@ -286,13 +286,13 @@ namespace SyllabusChecker
                             }
                             if (i == 8)
                             {
-                                if (model[i, 0].Replace(" ","") == syllable[j, 0].Replace(" ", ""))
+                                if (model[i, 0].Replace(" ", "") == syllable[j, 0].Replace(" ", ""))
                                 {
+                                    //Ошибка, строки должны быть различны, т.е. поле заполнено
                                     if (!errorsBody.ContainsKey(int.Parse(syllable[j, 1])))
                                     {
                                         errorsBody.Add(int.Parse(syllable[j, 1]), "Не указан исполнитель");
                                     }
-                                    //ошибка, строки должны быть различны, т.е. поле заполнено
                                     i++;
                                     j++;
                                 }
@@ -306,11 +306,11 @@ namespace SyllabusChecker
                             {
                                 if (model[i, 0].Replace(" ", "") == syllable[j, 0].Replace(" ", ""))
                                 {
+                                    //Ошибка, они должны быть различны, т.е. поле заполнено
                                     if (!errorsBody.ContainsKey(int.Parse(syllable[j, 1])))
                                     {
                                         errorsBody.Add(int.Parse(syllable[j, 1]), "Не указан уполномоченный");
                                     }
-                                    //ошибка, они должны быть различны, т.е. поле заполнено
                                     i++;
                                     j++;
                                 }
@@ -327,7 +327,7 @@ namespace SyllabusChecker
 
             //Section 1 = 1 Цели и задачи освоения дисциплины
             {
-                int ind = 0;
+                int ind = 1;
                 int indOfTargets = -1, indOfGoals = -1;
 
                 //Ищем, где начинаются цели
@@ -397,7 +397,7 @@ namespace SyllabusChecker
                 Dictionary<int, string> mod = new Dictionary<int, string>(),
                     syl = new Dictionary<int, string>();
 
-                for (int i = 0; i < modelSections[2].Paragraphs.Count; i++)
+                for (int i = 1; i < modelSections[2].Paragraphs.Count; i++)
                 {
                     if (modelSections[2].Paragraphs[i].Text != "")
                     {
@@ -405,7 +405,7 @@ namespace SyllabusChecker
                     }
                 }
 
-                for (int i = 0; i < syllableSections[2].Paragraphs.Count; i++)
+                for (int i = 1; i < syllableSections[2].Paragraphs.Count; i++)
                 {
                     if (syllableSections[2].Paragraphs[i].Text != "")
                     {
@@ -419,8 +419,7 @@ namespace SyllabusChecker
                     {
                         if (syl.Values.ElementAt(i) != mod.Values.ElementAt(i))
                         {
-                            errorsBody.Add(syl.Keys.ElementAt(i),
-                                "Несовпадение с макетом, должно быть: " + mod.Values.ElementAt(i));
+                            errorsBody.Add(syl.Keys.ElementAt(i), "Несовпадение с макетом, должно быть: " + mod.Values.ElementAt(i));
                         }
                     }
                 }
@@ -634,6 +633,7 @@ namespace SyllabusChecker
             {
                 int spaces_in_begin = 1, spaces_in_end = 0, spaces_in_end_model = 0;
                 bool hasTable = true;
+
                 //Считаем, есть ли пустые строки перед таблицей, чтобы если что их пропустить
                 while (!syllableSections[7].Paragraphs[spaces_in_begin].Text.Contains("№ занятия"))
                 {
@@ -663,8 +663,9 @@ namespace SyllabusChecker
                         ind_model--;
                     }
 
+                    int cols = int.Parse(ConfigurationManager.AppSettings["cols_in_4_3_table"]);
                     //Заголовки в таблице должны совпадать с моделью
-                    for (int i = spaces_in_begin; i < spaces_in_begin + 4; i++)
+                    for (int i = spaces_in_begin; i < spaces_in_begin + cols; i++)
                     {
                         if (syllableSections[7].Paragraphs[i].Text != modelSections[7].Paragraphs[i].Text)
                         {
@@ -675,7 +676,7 @@ namespace SyllabusChecker
 
                     //Проверяем строчки в таблице
                     int ind_lesson = 0, sum = 0;
-                    for (int i = spaces_in_begin + 4; i < syllableSections[7].Paragraphs.Count - 4 - spaces_in_end; i += 4)
+                    for (int i = spaces_in_begin + 4; i < syllableSections[7].Paragraphs.Count - cols - spaces_in_end; i += cols)
                     {
                         int s = 0, x, _;
                         bool isCorrect = int.TryParse(syllableSections[7].Paragraphs[i].Text, out x) &&
@@ -747,7 +748,8 @@ namespace SyllabusChecker
                 //Сравниваем абзацы, которые должны совпадать с макетом
                 try
                 {
-                    for (int i = 0; i < 4; i++)
+                    int pars = int.Parse(ConfigurationManager.AppSettings["important_pars_in_6"]);
+                    for (int i = 1; i <= pars; i++)
                     {
                         if (syllableSections[14].Paragraphs[i].Text != modelSections[14].Paragraphs[i].Text)
                         {
@@ -786,7 +788,7 @@ namespace SyllabusChecker
         }
 
         /// <summary>
-        /// Разбиение документа на секции по наименованиям разделов; список наименований лежит в ресурсах
+        /// Разбиение документа на секции по наименованиям разделов; список наименований лежит в ресурсах (NamesOfSections.txt)
         /// </summary>
         /// <param name="doc">Документ для разбиения</param>
         /// <returns>Список секций; каждая секция - заголовок секции + всё, что после него и до следующего заголовка</returns>
@@ -798,7 +800,7 @@ namespace SyllabusChecker
                 StringSplitOptions.RemoveEmptyEntries).ToList<string>();
             int ind = 0;
 
-            //Разбиваем док на секции
+            //Разбиваем doc на разделы
             List<DocSection> docSections = new List<DocSection>();
             for (int i = 0; i < doc.SectionParagraphs.Count; i++)
             {
@@ -855,18 +857,6 @@ namespace SyllabusChecker
             }
 
             return docSections;
-        }
-
-        /// <summary>
-        /// Проверяет два документа на соответствие (подсветка)
-        /// </summary>
-        /// <param name="inputData">Выбранные пользователем расположения файлов</param>
-        /// <returns></returns>
-        public static bool CheckDocumentsEquality(InputData inputData)
-        {
-            DocX Model = DocX.Load(inputData.ModelPath);
-            DocX Syllable = DocX.Load(inputData.SyllablePath);
-            return HighlightHandler.CheckDocumentsTextEquality(Model, Syllable);
         }
     }
 }
