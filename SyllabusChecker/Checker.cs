@@ -598,7 +598,140 @@ namespace SyllabusChecker
             }
 
             //Section 5 = 4.1 Структура дисциплины
+            {
+                List<int> errCount = new List<int>();
+                List<Table> modelTables = Model.Tables;
+                List<Table> syllableTables = Syllable.Tables;
+                int numParagraphInModel = 0, numOfTable = 3, ind = 0;
+                bool b = false;
+                for (int i = 0; i < syllableSections[5].Paragraphs.Count - 1; i++)//по параграфам в РП
+                {
+                    if (i == 0)
+                    {
+                        if (syllableSections[5].Paragraphs[i].Text != modelSections[5].Paragraphs[numParagraphInModel].Text)
+                        {
+                            errorsBody.Add(syllableSections[5].StartedAt + i, "Ошибка, необходимо " + modelSections[5].Paragraphs[numParagraphInModel].Text);
+                        }
+                    }
+                    else if (syllableSections[5].Paragraphs[i - 1].FollowingTables != null)//если начинается таблица
+                    {
+                        if (numOfTable == 3)//если первая таблица
+                        {
+                            for (int j = 0; j < syllableTables[numOfTable].Rows.Count; j++)
+                            {
+                                for (int f = 0; f < syllableTables[numOfTable].Rows[j].Cells.Count; f++)
+                                {
+                                    for (int h = 0; h < syllableTables[numOfTable].Rows[j].Cells[f].Paragraphs.Count; h++)
+                                    {
+                                        if (j == modelTables[numOfTable].Rows.Count - 2)
+                                        {
+                                            i++;
 
+                                            while (ind < modelTables[numOfTable].Rows[j].Paragraphs.Count)
+                                            {
+                                                numParagraphInModel++; ind++;
+                                            }
+                                        }
+                                        else if (syllableTables[numOfTable].Rows[j].Cells[f].Paragraphs[h].Text != modelTables[numOfTable].Rows[j].Cells[f].Paragraphs[h].Text)
+                                        {
+                                            i++; numParagraphInModel++;
+                                            errorsBody.Add(syllableSections[5].StartedAt + i - 1, "Ошибка, необходимо " + modelTables[numOfTable].Rows[j].Cells[f].Paragraphs[h].Text);
+                                        }
+                                        else { i++; numParagraphInModel++; }
+                                    }
+                                }
+
+                            }
+                            numOfTable++;
+                        }
+                        else if (numOfTable == 4 && modelTables.Count == 7)//если вторая таблица
+                        {
+                            bool skip = false;
+                            int jM = 0;
+                            for (int j = 0; j < syllableTables[numOfTable].Rows.Count; j++)
+                            {
+                                for (int g = 0; g < syllableTables[numOfTable].Rows[j].Cells.Count; g++)
+                                {
+                                    for (int f = 0; f < syllableTables[numOfTable].Rows[j].Cells[g].Paragraphs.Count; f++)
+                                    {
+                                        if (j > 2 && j < syllableTables[numOfTable].Rows.Count - 1)
+                                        {
+                                            i++;
+                                            for (int d = 3; (d < modelTables[numOfTable].Rows.Count - 1) && skip == false; d++)
+                                            {
+                                                jM++;
+                                                for (int par = 0; par < modelTables[numOfTable].Rows[d].Paragraphs.Count; par++)
+                                                {
+                                                    numParagraphInModel++;
+                                                }
+                                            }
+                                            skip = true;
+                                        }
+                                        else if (syllableTables[numOfTable].Rows[j].Cells[g].Paragraphs[f].Text != modelTables[numOfTable].Rows[jM].Cells[g].Paragraphs[f].Text)
+                                        {
+                                            i++; numParagraphInModel++;
+                                            errorsBody.Add(syllableSections[5].StartedAt + i - 1, "Ошибка, необходимо " + modelTables[numOfTable].Rows[jM].Cells[g].Paragraphs[f].Text);
+                                        }
+                                        else { i++; numParagraphInModel++; }
+                                    }
+                                }
+                                if (!(j > 2 && j < syllableTables[numOfTable].Rows.Count - 1))
+                                {
+                                    jM++;
+                                }
+                            }
+                            numOfTable++;
+                        }
+
+                        else if (numOfTable == modelTables.Count - 2)//если третья таблица
+                        {
+                            bool skip = false;
+                            int jM = 0;
+                            for (int j = 0; j < syllableTables[numOfTable].Rows.Count; j++)
+                            {
+                                for (int g = 0; g < syllableTables[numOfTable].Rows[j].Cells.Count; g++)
+                                {
+                                    for (int f = 0; f < syllableTables[numOfTable].Rows[j].Cells[g].Paragraphs.Count; f++)
+                                    {
+                                        if (j > 2 && j < syllableTables[numOfTable].Rows.Count - 2)
+                                        {
+                                            i++;
+                                            for (int d = 3; (d < modelTables[numOfTable].Rows.Count - 2) && skip == false; d++)
+                                            {
+                                                jM++;
+                                                for (int par = 0; par < modelTables[numOfTable].Rows[d].Paragraphs.Count; par++)
+                                                {
+                                                    numParagraphInModel++;
+                                                }
+                                            }
+                                            skip = true;
+                                        }
+                                        else if (syllableTables[numOfTable].Rows[j].Cells[g].Paragraphs[f].Text != modelTables[numOfTable].Rows[jM].Cells[g].Paragraphs[f].Text)
+                                        {
+                                            i++; numParagraphInModel++;
+                                            errorsBody.Add(syllableSections[5].StartedAt + i - 1, "Ошибка, необходимо " + modelTables[numOfTable].Rows[jM].Cells[g].Paragraphs[f].Text);
+                                        }
+                                        else { i++; numParagraphInModel++; }
+                                    }
+                                }
+                                if (!(j > 2 && j < syllableTables[numOfTable].Rows.Count - 2))
+                                {
+                                    jM++;
+                                }
+                            }
+                            numOfTable++;
+                        }
+                    }
+                    else
+                    {
+                        if (syllableSections[5].Paragraphs[i].Text != modelSections[5].Paragraphs[numParagraphInModel].Text)
+                        {
+                            errorsBody.Add(syllableSections[5].StartedAt + i - 1, "Ошибка, необходимо " + modelSections[5].Paragraphs[numParagraphInModel].Text);
+                        }
+                    }
+                    numParagraphInModel++;
+                }
+            }
 
             //Section 6 = 4.2 Содержание разделов дисциплины
             //Должна быть заполнена
