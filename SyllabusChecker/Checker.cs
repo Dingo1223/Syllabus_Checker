@@ -32,7 +32,7 @@ namespace SyllabusChecker
         public Checker(InputData inputData)
         {
             Model = DocX.Load(inputData.ModelPath);
-            Syllable = DocX.Load(inputData.SyllablePath);
+            Syllable = DocX.Load(inputData.DocumentPath);
 
             //Проверка титульника
             Dictionary<int, string> IndsTitle = CheckTitlePage();
@@ -63,7 +63,7 @@ namespace SyllabusChecker
             Dictionary<int, string> errorsBody, InputData inputData)
         {
             string path = Path.Combine(inputData.ResultFolderPath,
-                Path.GetFileNameWithoutExtension(inputData.SyllablePath) + "_checked.docx");
+                Path.GetFileNameWithoutExtension(inputData.DocumentPath) + "_checked.docx");
 
             //Размечаем титульник -- отмечаем ошибки жёлтой подсветкой
             foreach (int ind in errorsTitle.Keys)
@@ -180,9 +180,8 @@ namespace SyllabusChecker
                     }
                 }
 
-                //List<int> errorIndexModel = new List<int>();
                 //Проверяем, что все обязательные строки присутствуют
-                int temp9 = 0; // temp18 = 0;
+                int temp9 = 0;
                 for (int i = 0; i < tempForModel; i++)
                 {
                     if ((i >= 0 && i <= 7) || i == 9 || (i >= 11 && i <= 19) || (i >= 21 && i <= 24))
@@ -200,10 +199,6 @@ namespace SyllabusChecker
                             {
                                 temp9 = k;
                             }
-                            //if (i == 18)
-                            //{
-                            //    temp18 = k;
-                            //}
                         }
                         else
                         {
@@ -434,10 +429,9 @@ namespace SyllabusChecker
                 int j = 0;
                 for (int i = 0; i < syllableSections[3].Paragraphs.Count - 1; i++)
                 {
-                    int pId = 0;
                     if (i > 0 && modelSections[3].Paragraphs[i - 1].FollowingTables != null)
                     {
-                        pId = i - 1;
+                        int pId = i - 1;
                         if (modelSections[3].Paragraphs[pId].FollowingTables[0].ColumnCount == 2)//если 2 колонки
                         {
                             for (int y = 0; y < modelSections[3].Paragraphs[pId].FollowingTables[0].Rows.Count; y++)//по строкам
@@ -449,7 +443,7 @@ namespace SyllabusChecker
                                         for (int g = 0; g < modelSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs.Count; g++)
                                         {
                                             if (modelSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs[g].Text != syllableSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs[g].Text)
-                                            { errorsBody.Add(syllableSections[3].StartedAt + i, "Несоответствие с макетом, должно быть " + modelSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs[g].Text); }
+                                            { errorsBody.Add(syllableSections[3].StartedAt + i, "Несовпадение с макетом, должно быть " + modelSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs[g].Text); }
                                             i++;
                                         }
                                     }
@@ -468,7 +462,7 @@ namespace SyllabusChecker
                                         {
                                             for (int g = 0; g < syllableSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs.Count; g++)
                                             {
-                                                { errorsBody.Add(syllableSections[3].StartedAt + i - syllableSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs.Count + g, "Несоответствие с макетом, отсутствуют некоторые из элементов: 'Знать:' 'Уметь:' 'Владеть:'"); }
+                                                { errorsBody.Add(syllableSections[3].StartedAt + i - syllableSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs.Count + g, "Несовпадение с макетом, отсутствуют некоторые из элементов: 'Знать:' 'Уметь:' 'Владеть:'"); }
                                             }
                                         }
                                     }
@@ -480,10 +474,10 @@ namespace SyllabusChecker
                                             for (int g = 0; g < modelSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs.Count; g++)
                                             {
                                                 if (modelSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs[g].Text != syllableSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs[g].Text)
-                                                { errorsBody.Add(syllableSections[3].StartedAt + i, "Несоответствие с макетом, должно быть " + modelSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs[g].Text); m++; i++; }
+                                                { errorsBody.Add(syllableSections[3].StartedAt + i, "Несовпадение с макетом, должно быть " + modelSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs[g].Text); m++; i++; }
                                                 while (m < maxSylMod - 1)
                                                 {
-                                                    errorsBody.Add(syllableSections[3].StartedAt + i - 1, "Несоответствие с макетом");
+                                                    errorsBody.Add(syllableSections[3].StartedAt + i - 1, "Несовпадение с макетом");
                                                     i++;
                                                     m++;
                                                 }
@@ -504,7 +498,7 @@ namespace SyllabusChecker
                                         for (int g = 0; g < modelSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs.Count; g++)
                                         {
                                             if (modelSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs[g].Text != syllableSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs[g].Text)
-                                            { errorsBody.Add(syllableSections[3].StartedAt + i, "Несоответствие с макетом, должно быть " + modelSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs[g].Text); }
+                                            { errorsBody.Add(syllableSections[3].StartedAt + i, "Несовпадение с макетом, должно быть " + modelSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs[g].Text); }
                                             i++;
                                         }
                                     }
@@ -523,7 +517,7 @@ namespace SyllabusChecker
                                         {
                                             for (int g = 0; g < syllableSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs.Count; g++)
                                             {
-                                                errorsBody.Add(syllableSections[3].StartedAt + i - syllableSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs.Count + g, "Несоответствие с макетом, отсутствуют некоторые из элементов: 'Знать:' 'Уметь:' 'Владеть:'");
+                                                errorsBody.Add(syllableSections[3].StartedAt + i - syllableSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs.Count + g, "Несовпадение с макетом, отсутствуют некоторые из элементов: 'Знать:' 'Уметь:' 'Владеть:'");
                                             }
                                         }
                                     }
@@ -533,7 +527,7 @@ namespace SyllabusChecker
                                         {
                                             for (int g = 0; g < syllableSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs.Count; g++)
                                             {
-                                                errorsBody.Add(syllableSections[3].StartedAt + i, "Несоответствие с макетом");
+                                                errorsBody.Add(syllableSections[3].StartedAt + i, "Несовпадение с макетом");
                                                 i++;
                                             }
                                         }
@@ -542,18 +536,18 @@ namespace SyllabusChecker
                                             for (int g = 0; g < modelSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs.Count; g++)
                                             {
                                                 if (modelSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs[g].Text != syllableSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs[g].Text)
-                                                { errorsBody.Add(syllableSections[3].StartedAt + i, "Несоответствие с макетом, должно быть "+ modelSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs[g].Text); i++; }
+                                                { errorsBody.Add(syllableSections[3].StartedAt + i, "Несовпадение с макетом, должно быть " + modelSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs[g].Text); i++; }
                                             }
                                             int m = 0;
                                             while (m < syllableSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs.Count - modelSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs.Count)
-                                            { errorsBody.Add(syllableSections[3].StartedAt + i, "Несоответствие с макетом"); m++; i++; }
+                                            { errorsBody.Add(syllableSections[3].StartedAt + i, "Несовпадение с макетом"); m++; i++; }
                                         }
                                         else
                                         {
                                             for (int g = 0; g < modelSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs.Count; g++)
                                             {
                                                 if (modelSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs[g].Text != syllableSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs[g].Text)
-                                                { errorsBody.Add(syllableSections[3].StartedAt + i, "Несоответствие с макетом, должно быть " + modelSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs[g].Text); i++; }
+                                                { errorsBody.Add(syllableSections[3].StartedAt + i, "Несовпадение с макетом, должно быть " + modelSections[3].Paragraphs[pId].FollowingTables[0].Rows[y].Cells[l].Paragraphs[g].Text); i++; }
                                                 else
                                                 {
                                                     i++;
@@ -578,7 +572,7 @@ namespace SyllabusChecker
                             {
                                 if (syllableSections[3].Paragraphs[i + 1].Text != modelSections[3].Paragraphs[i + 1].Text)
                                 {
-                                    errorsBody.Add(syllableSections[3].StartedAt + i + 1, "Несоответствие с макетом, должно быть " + modelSections[3].Paragraphs[i + 1].Text);
+                                    errorsBody.Add(syllableSections[3].StartedAt + i + 1, "Несовпадение с макетом, должно быть " + modelSections[3].Paragraphs[i + 1].Text);
                                 }
                             }
                             i++;
@@ -606,7 +600,7 @@ namespace SyllabusChecker
                     {
                         if (syllableSections[5].Paragraphs[i].Text != modelSections[5].Paragraphs[numParagraphInModel].Text)
                         {
-                            errorsBody.Add(syllableSections[5].StartedAt + i, "Ошибка, необходимо " + modelSections[5].Paragraphs[numParagraphInModel].Text);
+                            errorsBody.Add(syllableSections[5].StartedAt + i, "Несовпадение с макетом, должно быть: " + modelSections[5].Paragraphs[numParagraphInModel].Text);
                         }
                     }
                     else if (syllableSections[5].Paragraphs[i - 1].FollowingTables != null)//если начинается таблица
@@ -628,7 +622,7 @@ namespace SyllabusChecker
                                         else if (syllableTables[numOfTable].Rows[j].Cells[f].Paragraphs[h].Text != modelTables[numOfTable].Rows[j].Cells[f].Paragraphs[h].Text)
                                         {
                                             i++; numParagraphInModel++;
-                                            errorsBody.Add(syllableSections[5].StartedAt + i - 1, "Ошибка, необходимо " + modelTables[numOfTable].Rows[j].Cells[f].Paragraphs[h].Text);
+                                            errorsBody.Add(syllableSections[5].StartedAt + i - 1, "Несовпадение с макетом, должно быть: " + modelTables[numOfTable].Rows[j].Cells[f].Paragraphs[h].Text);
                                         }
                                         else { i++; numParagraphInModel++; }
                                     }
@@ -660,7 +654,7 @@ namespace SyllabusChecker
                                         else if (syllableTables[numOfTable].Rows[j].Cells[g].Paragraphs[f].Text != modelTables[numOfTable].Rows[jM].Cells[g].Paragraphs[f].Text)
                                         {
                                             i++; numParagraphInModel++;
-                                            errorsBody.Add(syllableSections[5].StartedAt + i - 1, "Ошибка, необходимо " + modelTables[numOfTable].Rows[jM].Cells[g].Paragraphs[f].Text);
+                                            errorsBody.Add(syllableSections[5].StartedAt + i - 1, "Несовпадение с макетом, должно быть: " + modelTables[numOfTable].Rows[jM].Cells[g].Paragraphs[f].Text);
                                         }
                                         else { i++; numParagraphInModel++; }
                                     }
@@ -695,7 +689,7 @@ namespace SyllabusChecker
                                         else if (syllableTables[numOfTable].Rows[j].Cells[g].Paragraphs[f].Text != modelTables[numOfTable].Rows[jM].Cells[g].Paragraphs[f].Text)
                                         {
                                             i++; numParagraphInModel++;
-                                            errorsBody.Add(syllableSections[5].StartedAt + i - 1, "Ошибка, необходимо " + modelTables[numOfTable].Rows[jM].Cells[g].Paragraphs[f].Text);
+                                            errorsBody.Add(syllableSections[5].StartedAt + i - 1, "Несовпадение с макетом, должно быть: " + modelTables[numOfTable].Rows[jM].Cells[g].Paragraphs[f].Text);
                                         }
                                         else { i++; numParagraphInModel++; }
                                     }
@@ -710,7 +704,7 @@ namespace SyllabusChecker
                     {
                         if (syllableSections[5].Paragraphs[i].Text != modelSections[5].Paragraphs[numParagraphInModel].Text)
                         {
-                            errorsBody.Add(syllableSections[5].StartedAt + i - 1, "Ошибка, необходимо " + modelSections[5].Paragraphs[numParagraphInModel].Text);
+                            errorsBody.Add(syllableSections[5].StartedAt + i - 1, "Несовпадение с макетом, должно быть: " + modelSections[5].Paragraphs[numParagraphInModel].Text);
                         }
                     }
                     numParagraphInModel++;
@@ -922,7 +916,7 @@ namespace SyllabusChecker
             for (int i = 0; i < doc.SectionParagraphs.Count; i++)
             {
                 namesOfSections[ind] = namesOfSections[ind].Replace("\r", "");
-                while (doc.SectionParagraphs[i].Text != namesOfSections[ind])
+                while (doc.SectionParagraphs[i].Text.Trim(new char[] { ' ' }) != namesOfSections[ind].Trim((new char[] { ' ' })))
                 {
                     i++;
                     if (i >= doc.SectionParagraphs.Count)
@@ -958,7 +952,7 @@ namespace SyllabusChecker
                 else
                 {
                     //Если раздел не последний -- записываем все параграфы между двумя соседними разделами
-                    while (doc.SectionParagraphs[i].Text != namesOfSections[ind])
+                    while (doc.SectionParagraphs[i].Text.Trim() != namesOfSections[ind].Trim())
                     {
                         paragraphs.Add(doc.SectionParagraphs[i]);
                         i++;

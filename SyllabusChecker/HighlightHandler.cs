@@ -1,93 +1,95 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Xceed.Document.NET;
 using Xceed.Words.NET;
-using MessageBox = System.Windows.MessageBox;
 
 namespace SyllabusChecker
 {
-    struct ElementaryFragment
+    public class HighlightHandler
     {
-        public string text;
-        public bool isGreen;
-    }
+        private DocX Model;
+        private DocX Syllabus;
 
-    struct ModelParagraph
-    {
-        public int sourceIndex; //index in original
-        public Paragraph paragraph;
-        //public string text; //full text
-        //public ElementaryFragment[] fragments; //magic text
-    };
-
-    struct Document
-    {
-        public ModelParagraph[] paragraphs;
-    };
-
-    struct Error
-    {
-        public string paragraph;
-        public int index;
-        public string type;
-    }
-
-    static class HighlightHandler
-    {
         /// <summary>
         /// Проверяет два документа на соответствие (подсветка)
         /// </summary>
         /// <param name="inputData">Выбранные пользователем расположения файлов</param>
-        /// <returns></returns>
-        public static bool CheckDocumentsEquality(InputData inputData)
+        /// <returns>Количество найденных ошибок</returns>
+        public int CheckDocumentsEquality(InputData inputData)
         {
-            DocX Model = DocX.Load(inputData.ModelPath);
-            DocX Syllable = DocX.Load(inputData.SyllablePath);
-            return HighlightHandler.CheckDocumentsTextEquality(Model, Syllable);
+            Model = DocX.Load(inputData.ModelPath);
+            Syllabus = DocX.Load(inputData.DocumentPath);
+            List<Error> errors = CheckDocumentsTextEquality();
+            CreateResultDoc(errors, inputData);
+
+            return errors.Count;
+        }
+
+        /// <summary>
+        /// Создание результирующего документа, с отмеченными ошибками
+        /// </summary>
+        /// <param name="errors">Список ошибок</param>
+        /// <param name="inputData">Выбранные пользователем расположения файлов</param>
+        public void CreateResultDoc(List<Error> errors, InputData inputData)
+        {
+            string path = Path.Combine(inputData.ResultFolderPath,
+                Path.GetFileNameWithoutExtension(inputData.DocumentPath) + "_checked.docx");
+
+            //Сохраняем проверенный документ
+            Syllabus.SaveAs(path);
+
+            Dictionary<int, string> errors_dict = new Dictionary<int, string>();
+            foreach (Error err in errors)
+            {
+                if (!errors_dict.ContainsKey(err.Index))
+                {
+                    errors_dict.Add(err.Index, err.Type);
+                }
+            }
+
+            //Добавляем комментарии об ошибках
+            DocComments.AddComments(errors_dict, path);
         }
 
         /// <summary>
         /// Проверяет документы на сходство (?)
         /// </summary>
-        /// <param name="model">Образец документа</param>
-        /// <param name="syllabus">Проверяемый документ</param>
-        /// <returns></returns>
-        public static bool CheckDocumentsTextEquality(DocX model, DocX syllabus)
+        /// <returns>Список найденных ошибок с описанием</returns>
+        public List<Error> CheckDocumentsTextEquality()
         {
             List<Error> errors = new List<Error>();
             List<ModelParagraph> usefulModelParagraphs = new List<ModelParagraph>();
-            Paragraph currentModelParagraph;
-            string currentParagraph;
-            int currentModelIndex;
+            //Paragraph currentModelParagraph;
+            //string currentParagraph;
+            //int currentModelIndex;
 
-            for (int i = 0; i < model.Paragraphs.Count; i++)
+            for (int i = 0; i < Model.Paragraphs.Count; i++)
             {
-                currentModelParagraph = model.Paragraphs[i];
-                if (HasSomeContent(currentModelParagraph.Text) && HasWhiteSegments(currentModelParagraph))
+                //currentModelParagraph = model.Paragraphs[i];
+                //if (HasSomeContent(Model.Paragraphs[i].Text) && HasWhiteSegments(i))
+                if ((Model.Paragraphs[i].Text.Length > 0) && HasWhiteSegments(i))
                 {
-                    ModelParagraph mp = new ModelParagraph
-                    {
-                        paragraph = currentModelParagraph,
-                        sourceIndex = i
-                    };
-                    usefulModelParagraphs.Add(mp);
+                    usefulModelParagraphs.Add(new ModelParagraph(i, Model.Paragraphs[i].Text));
                 }
             }
 
             int k = 0; //usefulModelParagraphs counter
-            int lastSyllabusIndex = syllabus.Paragraphs.Count - 1;
+            int lastSyllabusIndex = Syllabus.Paragraphs.Count - 1;
 
-            for (int i = 0; i < syllabus.Paragraphs.Count; i++)
+            for (int i = 0; i < Syllabus.Paragraphs.Count; i++)
             {
-                currentParagraph = syllabus.Paragraphs[i].Text;
+                //currentParagraph = syllabus.Paragraphs[i].Text;
 
-                if (!HasSomeContent(currentParagraph)) continue;
+                //if (!HasSomeContent(Syllabus.Paragraphs[i].Text)) continue;
+                if (Syllabus.Paragraphs[i].Text.Length == 0) continue;
 
-                currentModelParagraph = usefulModelParagraphs[k].paragraph; //paragraph
-                currentModelIndex = usefulModelParagraphs[k].sourceIndex;
+                //currentModelParagraph = usefulModelParagraphs[k].paragraph; //paragraph
+                //currentModelIndex = usefulModelParagraphs[k].sourceIndex;
 
-                bool paragraphsMatchUp = CompareTwoParagraphs(currentModelParagraph, currentParagraph);
-                if (paragraphsMatchUp)
+                //bool paragraphsMatchUp = CompareTwoParagraphs(usefulModelParagraphs[k].paragraph, syllabus.Paragraphs[i].Text);
+                if (CompareTwoParagraphs(Model.Paragraphs[usefulModelParagraphs[k].SourceIndex], Syllabus.Paragraphs[i].Text))
                 {
                     k++;
                     if (k == usefulModelParagraphs.Count) //model ends
@@ -97,27 +99,23 @@ namespace SyllabusChecker
                     }
                     continue;
                 }
-                else if (!StartsWithGreenHighligth(currentModelParagraph))
+                else if (!StartsWithGreenHighligth(usefulModelParagraphs[k].SourceIndex))
                 {
                     bool previousNonemptyIsGreen = false;
-                    int counter = currentModelIndex - 1;
-                    while (counter >= 0 && !HasSomeContent(model.Paragraphs[counter].Text))
+                    int counter = usefulModelParagraphs[k].SourceIndex - 1;
+                    //while (counter >= 0 && !HasSomeContent(Model.Paragraphs[counter].Text))
+                    while (counter >= 0 && (Model.Paragraphs[counter].Text.Length == 0))
                     {
                         counter--;
                     }
-                    if (counter >= 0 && EndsWithGreenHighligth(model.Paragraphs[counter]))
+                    if (counter >= 0 && EndsWithGreenHighligth(counter))
                     {
                         previousNonemptyIsGreen = true;
                     }
 
-                    if (currentModelIndex == 0 || !previousNonemptyIsGreen)
+                    if (usefulModelParagraphs[k].SourceIndex == 0 || !previousNonemptyIsGreen)
                     {
-                        MessageBox.Show("Лишний текст в РП! Абзац: " + i.ToString());
-                        Error error;
-                        error.paragraph = currentParagraph;
-                        error.index = i;
-                        error.type = "Undeclared text in Syllabus";
-                        errors.Add(error);
+                        errors.Add(new Error(i, "Лишний текст в РП! Абзац: " + i.ToString()));
                     }
                 }
                 else continue;
@@ -126,32 +124,30 @@ namespace SyllabusChecker
             //model doest'n ends
             if (k != usefulModelParagraphs.Count)
             {
-                MessageBox.Show("В РП нет обязательного фрагмента! Индекс фрагмента в модели: " + k.ToString() + " -- " + usefulModelParagraphs[k].paragraph.Text);
-                Error error;
-                error.paragraph = usefulModelParagraphs[k].paragraph.Text;
-                error.index = usefulModelParagraphs[k].sourceIndex;
-                error.type = "Missing required paragraph";
-                errors.Add(error);
+                errors.Add(new Error(usefulModelParagraphs[k].SourceIndex, 
+                    "В РП нет обязательного фрагмента: " + usefulModelParagraphs[k].Paragraph));
             }
-            else if (lastSyllabusIndex != syllabus.Paragraphs.Count - 1 // syllabus doesn't ends
-                && !EndsWithGreenHighligth(usefulModelParagraphs.Last().paragraph))
+            else if ((lastSyllabusIndex != Syllabus.Paragraphs.Count - 1) // syllabus doesn't ends
+                && !EndsWithGreenHighligth(usefulModelParagraphs.Last().SourceIndex))
             {
                 bool nextNonemptyIsGreen = false;
-                int counter = usefulModelParagraphs.Last().sourceIndex + 1;
-                while (counter <= syllabus.Paragraphs.Count && !HasSomeContent(model.Paragraphs[counter].Text))
+                int counter = usefulModelParagraphs.Last().SourceIndex + 1;
+                //while (counter <= Syllabus.Paragraphs.Count && !HasSomeContent(Model.Paragraphs[counter].Text))
+                while (counter <= Syllabus.Paragraphs.Count && (Model.Paragraphs[counter].Text.Length == 0))
                 {
                     counter++;
                 }
-                if (counter <= syllabus.Paragraphs.Count && StartsWithGreenHighligth(model.Paragraphs[counter]))
+                if (counter <= Syllabus.Paragraphs.Count && StartsWithGreenHighligth(counter))
                 {
                     nextNonemptyIsGreen = true;
                 }
 
 
                 bool hasNonemptyParagraph = false;
-                for (int i = lastSyllabusIndex + 1; i < syllabus.Paragraphs.Count; i++)
+                for (int i = lastSyllabusIndex + 1; i < Syllabus.Paragraphs.Count; i++)
                 {
-                    if (HasSomeContent(syllabus.Paragraphs[i].Text))
+                    //if (HasSomeContent(Syllabus.Paragraphs[i].Text))
+                    if (Syllabus.Paragraphs[i].Text.Length > 0)
                     {
                         hasNonemptyParagraph = true;
                         break;
@@ -160,19 +156,11 @@ namespace SyllabusChecker
 
                 if (hasNonemptyParagraph && !nextNonemptyIsGreen)
                 {
-                    MessageBox.Show("Лишний текст в документе! Абзац: " + lastSyllabusIndex.ToString() + " -- " + syllabus.Paragraphs[lastSyllabusIndex].Text);
-                    Error error;
-                    error.paragraph = syllabus.Paragraphs[lastSyllabusIndex].Text;
-                    error.index = lastSyllabusIndex;
-                    error.type = "Undeclared text in Syllabus";
-                    errors.Add(error);
+                    errors.Add(new Error(lastSyllabusIndex, "Лишний текст в документе: " + Syllabus.Paragraphs[lastSyllabusIndex].Text));
                 }
             }
 
-            //пока так выводятся ошибки, потом можно как-то получше выводить массив errors
-
-            if (errors.Count == 0) return true;
-            else return false;
+            return errors;
         }
 
         /// <summary>
@@ -180,12 +168,13 @@ namespace SyllabusChecker
         /// </summary>
         /// <param name="p">Параграф для проверки</param>
         /// <returns></returns>
-        private static bool HasWhiteSegments(Paragraph p)
+        private bool HasWhiteSegments(int p)
         {
-            if (p.MagicText.Count == 0) return false;
-            for (int i = 0; i < p.MagicText.Count; i++)
+            if (Model.Paragraphs[p].MagicText.Count == 0) return false;
+            for (int i = 0; i < Model.Paragraphs[p].MagicText.Count; i++)
             {
-                if (p.MagicText[i].formatting == null || p.MagicText[i].formatting.Highlight != Highlight.green)
+                if (Model.Paragraphs[p].MagicText[i].formatting == null || 
+                    Model.Paragraphs[p].MagicText[i].formatting.Highlight != Highlight.green)
                     return true;
             }
 
@@ -197,13 +186,15 @@ namespace SyllabusChecker
         /// </summary>
         /// <param name="text">Текст параграфа</param>
         /// <returns></returns>
-        private static bool HasSomeContent(string text) => text.Trim().Length > 0;
+        //private static bool HasSomeContent(string text) => text.Trim().Length > 0;
 
-        private static bool StartsWithGreenHighligth(Paragraph p) => 
-            p.MagicText.Count > 0 && p.MagicText[0].formatting != null && p.MagicText[0].formatting.Highlight == Highlight.green;
+        private bool StartsWithGreenHighligth(int p) => 
+            Model.Paragraphs[p].MagicText.Count > 0 && Model.Paragraphs[p].MagicText[0].formatting != null &&
+            Model.Paragraphs[p].MagicText[0].formatting.Highlight == Highlight.green;
 
-        private static bool EndsWithGreenHighligth(Paragraph p) => 
-            p.MagicText.Count > 0 && p.MagicText.Last().formatting != null && p.MagicText.Last().formatting.Highlight == Highlight.green;
+        private bool EndsWithGreenHighligth(int p) =>
+            Model.Paragraphs[p].MagicText.Count > 0 && Model.Paragraphs[p].MagicText.Last().formatting != null &&
+            Model.Paragraphs[p].MagicText.Last().formatting.Highlight == Highlight.green;
 
         /// <summary>
         /// Проверка на соответствие двух параграфов
@@ -211,7 +202,7 @@ namespace SyllabusChecker
         /// <param name="p1">Первый параграф</param>
         /// <param name="p2">Текст второго параграфа</param>
         /// <returns></returns>
-        private static bool CompareTwoParagraphs(Paragraph p1, string p2)
+        private bool CompareTwoParagraphs(Paragraph p1, string p2)
         {
             List<ElementaryFragment> modelFragments = new List<ElementaryFragment>();
             string currentTextPart;
@@ -260,11 +251,7 @@ namespace SyllabusChecker
                 {
                     int index = p2.IndexOf(modelFragments[i].text);
 
-                    if (index == -1)
-                    {
-                        //MessageBox.Show("Пропущен обязательный фрагмент: '" + modelFragments[i].text + "'");
-                        return false;
-                    }
+                    if (index == -1) return false;
                     else
                     {
                         if (i != 0 && modelFragments[i - 1].isGreen) //до этого был зелёный фрагмент
@@ -282,8 +269,6 @@ namespace SyllabusChecker
                             {
                                 return true;
                             }
-                            //MessageBox.Show("Лишний текст: '" + p2.Substring(0, index) + "'");
-                            //return false;
                         }
                     }
                 }

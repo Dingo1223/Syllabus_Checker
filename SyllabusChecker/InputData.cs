@@ -16,7 +16,7 @@ namespace SyllabusChecker
         /// <summary>
         /// Путь к проверяемому файлу
         /// </summary>
-        public string SyllablePath { get; set; }
+        public string DocumentPath { get; set; }
 
         /// <summary>
         /// Путь к папке для сохранения результата
@@ -32,7 +32,7 @@ namespace SyllabusChecker
             {
                 sr = new StreamReader(Path.Combine(appDataPath, "paths.txt"));
                 ModelPath = sr.ReadLine();
-                SyllablePath = sr.ReadLine();
+                DocumentPath = sr.ReadLine();
                 ResultFolderPath = sr.ReadLine();
                 sr.Close();
             }
@@ -44,7 +44,7 @@ namespace SyllabusChecker
                 sw.WriteLine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments));
                 sw.Close();
                 ModelPath = "";
-                SyllablePath = "";
+                DocumentPath = "";
                 ResultFolderPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
             }
         }

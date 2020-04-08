@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SyllabusChecker"
         mc:Ignorable="d"
-        Title="Проверка рабочей программы" Height="184" Width="360" 
+        Title="Проверка документа" Height="184" Width="360" 
         WindowStyle="ToolWindow" ResizeMode="NoResize">
     <Grid Background="#FFEFEFEF">
         <TextBlock Margin="20, 20, 4, 4" Text="Проверка завершена. Результат сохранён в:"

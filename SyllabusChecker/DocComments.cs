@@ -10,7 +10,7 @@ namespace SyllabusChecker
     public static class DocComments
     {
         /// <summary>
-        /// Для добавления комментариев в .docx
+        /// Добавление комментариев в рабочую программу формата .docx
         /// </summary>
         /// <param name="errorsTitle">Список индексов ошибок в титульном листе, с описаниями</param>
         /// <param name="errorsBody">Список индексов ошибок в остальном документе, с описаниями</param>
@@ -29,6 +29,22 @@ namespace SyllabusChecker
                 foreach (KeyValuePair<int, string> err in errorsBody)
                 {
                     AddCommentOnParagraph(document, err.Key + shift, err.Value);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Добавление комментариев в документ формата .docx
+        /// </summary>
+        /// <param name="errors">Список найденных в документе ошибок</param>
+        /// <param name="path">Путь к сохраняемому файлу с результатами</param>
+        public static void AddComments(Dictionary<int, string> errors, string path)
+        {
+            using (WordprocessingDocument document = WordprocessingDocument.Open(path, true))
+            {
+                foreach (KeyValuePair<int, string> err in errors)
+                {
+                    AddCommentOnParagraph(document, err.Key, err.Value);
                 }
             }
         }

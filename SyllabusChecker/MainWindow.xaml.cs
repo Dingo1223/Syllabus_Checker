@@ -18,7 +18,7 @@ namespace SyllabusChecker
             InitializeComponent();
             InputData = new InputData();
             TbModelPath.Text = InputData.ModelPath;
-            TbSyllablePath.Text = InputData.SyllablePath;
+            TbSyllablePath.Text = InputData.DocumentPath;
             TbResultFolderPath.Text = InputData.ResultFolderPath;
         }
 
@@ -29,7 +29,7 @@ namespace SyllabusChecker
         {
             OpenFileDialog ofd = new OpenFileDialog
             {
-                Filter = "Doc or Docx files|*.doc;*.docx"
+                Filter = "Docx files|*.docx"
             };
             if (ofd.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
@@ -45,11 +45,11 @@ namespace SyllabusChecker
         {
             OpenFileDialog ofd = new OpenFileDialog
             {
-                Filter = "Doc or Docx files|*.doc;*.docx"
+                Filter = "Docx files|*.docx"
             };
             if (ofd.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
-                InputData.SyllablePath = ofd.FileName;
+                InputData.DocumentPath = ofd.FileName;
                 TbSyllablePath.Text = ofd.FileName;
             }
         }
@@ -80,7 +80,7 @@ namespace SyllabusChecker
                 MessageBox.Show("Файл модели документа не выбран или не существует");
                 return;
             }
-            else if (!(new FileInfo(InputData.SyllablePath).Exists) || (InputData.SyllablePath == ""))
+            else if (!(new FileInfo(InputData.DocumentPath).Exists) || (InputData.DocumentPath == ""))
             {
                 MessageBox.Show("Проверяемый файл не выбран или не существует");
                 return;
@@ -95,7 +95,7 @@ namespace SyllabusChecker
                 {
                     checker = new Checker(InputData);
                     ResultWindow rw = new ResultWindow(InputData.ResultFolderPath + "\\" +
-                        Path.GetFileNameWithoutExtension(InputData.SyllablePath) + @"_checked.docx", checker.ErrorsCount);
+                        Path.GetFileNameWithoutExtension(InputData.DocumentPath) + @"_checked.docx", checker.ErrorsCount);
                     rw.ShowDialog();
                 }
                 catch (IOException ex)
@@ -113,8 +113,11 @@ namespace SyllabusChecker
             {
                 try
                 {
-                    bool checkingResult = HighlightHandler.CheckDocumentsEquality(InputData);
-                    MessageBox.Show(checkingResult ? "Good" : "Bad");
+                    HighlightHandler highlightHandler = new HighlightHandler();
+                    int errors_count = highlightHandler.CheckDocumentsEquality(InputData);
+                    ResultWindow rw = new ResultWindow(InputData.ResultFolderPath + "\\" +
+                         Path.GetFileNameWithoutExtension(InputData.DocumentPath) + @"_checked.docx", errors_count);
+                    rw.ShowDialog();
                 }
                 catch (IOException ex)
                 {
@@ -132,7 +135,7 @@ namespace SyllabusChecker
             string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
             StreamWriter sw = new StreamWriter(Path.Combine(appDataPath, "paths.txt"), false);
             sw.WriteLine(InputData.ModelPath);
-            sw.WriteLine(InputData.SyllablePath);
+            sw.WriteLine(InputData.DocumentPath);
             sw.WriteLine(InputData.ResultFolderPath);
             sw.Close();
         }
