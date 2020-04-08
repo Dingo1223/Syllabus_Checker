@@ -184,7 +184,7 @@ namespace SyllabusChecker
                 int temp9 = 0;
                 for (int i = 0; i < tempForModel; i++)
                 {
-                    if ((i >= 0 && i <= 7) || i == 9 || (i >= 11 && i <= 19) || (i >= 21 && i <= 24))
+                    if ((i >= 0 && i <= 7) || i == 9 || (i >= 11 && i <= 19) || i == 21 || i == 22 || i == 24)
                     {
                         int k = 0;
                         while (k < tempForSyllable && model[i, 0] != syllable[k, 0])
@@ -242,6 +242,7 @@ namespace SyllabusChecker
                     int i = 0, j = 0;
                     while (j < tempForSyllable - 1)
                     {
+
                         if (model[i, 2] == "1" && model[i, 0] == syllable[j, 0])
                         {
                             i++;
@@ -270,11 +271,27 @@ namespace SyllabusChecker
                                     j++;
                                 }
                             }
-
                         }
+                        if (i == 23)
+                        {
+                            if (model[i, 0] == syllable[j, 0])
+                            {
+                                //Ошибка, ФИО должно быть указано
+                                if (!errorsBody.ContainsKey(int.Parse(syllable[j, 1])))
+                                {
+                                    errorsBody.Add(int.Parse(syllable[j, 1]), "Не указано ФИО");
+                                }
+                            }
+                        }
+
                         if (model[i, 2] == null)
                         {
                             if (i == 10)
+                            {
+                                i++;
+                                j++;
+                            }
+                            if (i == 23)
                             {
                                 i++;
                                 j++;
