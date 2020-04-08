@@ -2,7 +2,7 @@
 {
     public struct ElementaryFragment
     {
-        public string text;
-        public bool isGreen;
+        public string Text;
+        public bool IsGreen;
     }
 }

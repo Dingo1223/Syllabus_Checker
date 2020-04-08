@@ -916,7 +916,7 @@ namespace SyllabusChecker
             for (int i = 0; i < doc.SectionParagraphs.Count; i++)
             {
                 namesOfSections[ind] = namesOfSections[ind].Replace("\r", "");
-                while (doc.SectionParagraphs[i].Text.Trim(new char[] { ' ' }) != namesOfSections[ind].Trim((new char[] { ' ' })))
+                while (doc.SectionParagraphs[i].Text.Trim() != namesOfSections[ind].Trim())
                 {
                     i++;
                     if (i >= doc.SectionParagraphs.Count)

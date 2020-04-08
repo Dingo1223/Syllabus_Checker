@@ -1,6 +1,4 @@
-﻿using Xceed.Document.NET;
-
-namespace SyllabusChecker
+﻿namespace SyllabusChecker
 {
     public struct ModelParagraph
     {
@@ -12,7 +10,5 @@ namespace SyllabusChecker
             SourceIndex = sourceIndex;
             Paragraph = paragraph;
         }
-        //public string text; //full text
-        //public ElementaryFragment[] fragments; //magic text
     };
 }
