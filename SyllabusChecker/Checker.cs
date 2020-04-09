@@ -40,7 +40,8 @@ namespace SyllabusChecker
             //Получаем разбитые на секции модель и РП
             if (Model.Sections.Count < 2)
             {
-                throw new Exception("Нарушен формат документа: отсутствует разбиение на секции. Используйте другой режим проверки");
+                throw new Exception("Нарушен формат документа (возможно, вы пытаетесь проверить не рабочую программу)." +
+                    "\nИспользуйте другой режим проверки.");
             }
             List<DocSection> ModelSections = GetDocSections(Model.Sections[1]);
             List<DocSection> SyllableSections = GetDocSections(Syllable.Sections[1]);
@@ -134,10 +135,8 @@ namespace SyllabusChecker
         /// <returns>Dictionary с парами значений "индекс параграфа с ошибкой; описание ошибки"</returns>
         public Dictionary<int, string> CheckSyllableSections(List<DocSection> modelSections, List<DocSection> syllableSections)
         {
-            // !!!!!
             // Для описания ошибки в документе:
             // ФОРМАТ: (индекс_параграфа_в_Syllable; описание_ошибки)
-            // !!!!!
             Dictionary<int, string> errorsBody = new Dictionary<int, string>();
 
             //Section 0 = Рабочая программа рассмотрена и утверждена на заседании кафедры

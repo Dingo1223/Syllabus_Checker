@@ -2,7 +2,6 @@
 {
     public struct Error
     {
-        //public string paragraph;
         public int Index;
         public string Type;
 

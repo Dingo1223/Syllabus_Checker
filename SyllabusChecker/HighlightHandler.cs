@@ -8,7 +8,7 @@ namespace SyllabusChecker
 {
     public class HighlightHandler
     {
-        private DocX Model;
+        //private DocX Model;
         private List<Paragraph> ModParagraphs;
         private DocX Syllabus;
         private List<Paragraph> SylParagraphs;
@@ -20,10 +20,10 @@ namespace SyllabusChecker
         /// <returns>Количество найденных ошибок</returns>
         public int CheckDocumentsEquality(InputData inputData)
         {
-            Model = DocX.Load(inputData.ModelPath);
+            //Model = DocX.Load(inputData.ModelPath);
             Syllabus = DocX.Load(inputData.DocumentPath);
 
-            ModParagraphs = Model.Paragraphs.ToList();
+            ModParagraphs = DocX.Load(inputData.ModelPath).Paragraphs.ToList();
             SylParagraphs = Syllabus.Paragraphs.ToList();
             List<Error> errors = CheckDocumentsTextEquality();
             CreateResultDoc(errors, inputData);
@@ -64,13 +64,13 @@ namespace SyllabusChecker
         public List<Error> CheckDocumentsTextEquality()
         {
             List<Error> errors = new List<Error>();
-            List<ModelParagraph> usefulModelParagraphs = new List<ModelParagraph>();
+            List<int> usefulModelParagraphs = new List<int>();
 
             for (int i = 0; i < ModParagraphs.Count; i++)
             {
                 if ((ModParagraphs[i].Text != "") && HasWhiteSegments(i))
                 {
-                    usefulModelParagraphs.Add(new ModelParagraph(i, ModParagraphs[i].Text));
+                    usefulModelParagraphs.Add(i);
                 }
             }
 
@@ -79,9 +79,9 @@ namespace SyllabusChecker
 
             for (int i = 0; i < SylParagraphs.Count; i++)
             {
-                if (!HasSomeContent(Syllabus.Paragraphs[i].Text)) continue;
+                if (!HasSomeContent(SylParagraphs[i].Text)) continue;
 
-                if (CompareTwoParagraphs(ModParagraphs[usefulModelParagraphs[k].SourceIndex], SylParagraphs[i].Text))
+                if (CompareTwoParagraphs(ModParagraphs[usefulModelParagraphs[k]], SylParagraphs[i].Text))
                 {
                     k++;
                     if (k == usefulModelParagraphs.Count) //model ends
@@ -91,39 +91,39 @@ namespace SyllabusChecker
                     }
                     continue;
                 }
-                else if (!StartsWithGreenHighligth(usefulModelParagraphs[k].SourceIndex))
-                {
-                    bool previousNonemptyIsGreen = false;
-                    int counter = usefulModelParagraphs[k].SourceIndex - 1;
-                    while (counter >= 0 && !HasSomeContent(Model.Paragraphs[counter].Text))
-                    {
-                        counter--;
-                    }
-                    if (counter >= 0 && EndsWithGreenHighligth(counter))
-                    {
-                        previousNonemptyIsGreen = true;
-                    }
+                //else if (!StartsWithGreenHighligth(usefulModelParagraphs[k]))
+                //{
+                //    bool previousNonemptyIsGreen = false;
+                //    int counter = usefulModelParagraphs[k] - 1;
+                //    while (counter >= 0 && !HasSomeContent(ModParagraphs[counter].Text))
+                //    {
+                //        counter--;
+                //    }
+                //    if (counter >= 0 && EndsWithGreenHighligth(counter))
+                //    {
+                //        previousNonemptyIsGreen = true;
+                //    }
 
-                    if (usefulModelParagraphs[k].SourceIndex == 0 || !previousNonemptyIsGreen)
-                    {
-                        errors.Add(new Error(i, "Лишний текст в РП! Абзац: " + i.ToString()));
-                    }
-                }
+                //    if (usefulModelParagraphs[k] == 0 || !previousNonemptyIsGreen)
+                //    {
+                //        errors.Add(new Error(i, "Лишний текст в документе; абзац: \"" + i.ToString() + "\""));
+                //    }
+                //}
                 else continue;
             }
 
             //model doest'n ends
             if (k != usefulModelParagraphs.Count)
             {
-                errors.Add(new Error(usefulModelParagraphs[k].SourceIndex, 
-                    "В РП нет обязательного фрагмента: " + usefulModelParagraphs[k].Paragraph));
+                errors.Add(new Error(usefulModelParagraphs[k], 
+                    "В документе нет обязательного фрагмента: \"" + ModParagraphs[usefulModelParagraphs[k]].Text + "\""));
             }
             else if ((lastSyllabusIndex != SylParagraphs.Count - 1) && 
-                !EndsWithGreenHighligth(usefulModelParagraphs.Last().SourceIndex)) // syllabus doesn't ends
+                !EndsWithGreenHighligth(usefulModelParagraphs.Last())) // syllabus doesn't ends
             {
                 bool nextNonemptyIsGreen = false;
-                int counter = usefulModelParagraphs.Last().SourceIndex + 1;
-                while (counter <= Syllabus.Paragraphs.Count && !HasSomeContent(Model.Paragraphs[counter].Text))
+                int counter = usefulModelParagraphs.Last() + 1;
+                while (counter <= SylParagraphs.Count && !HasSomeContent(SylParagraphs[counter].Text))
                 {
                     counter++;
                 }
@@ -136,7 +136,7 @@ namespace SyllabusChecker
                 bool hasNonemptyParagraph = false;
                 for (int i = lastSyllabusIndex + 1; i < SylParagraphs.Count; i++)
                 {
-                    if (HasSomeContent(Syllabus.Paragraphs[i].Text))
+                    if (HasSomeContent(SylParagraphs[i].Text))
                     {
                         hasNonemptyParagraph = true;
                         break;
@@ -145,7 +145,8 @@ namespace SyllabusChecker
 
                 if (hasNonemptyParagraph && !nextNonemptyIsGreen)
                 {
-                    errors.Add(new Error(lastSyllabusIndex, "Лишний текст в документе: " + SylParagraphs[lastSyllabusIndex].Text));
+                    errors.Add(new Error(lastSyllabusIndex, "Лишний текст в документе: \"" +
+                        SylParagraphs[lastSyllabusIndex].Text + "\""));
                 }
             }
 

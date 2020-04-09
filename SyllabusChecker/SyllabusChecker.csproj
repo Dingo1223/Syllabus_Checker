@@ -107,11 +107,9 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="DocComments.cs" />
-    <Compile Include="DocSection.cs" />
-    <Compile Include="HighlightHandlerStructs\Document.cs" />
-    <Compile Include="HighlightHandlerStructs\ElementaryFragment.cs" />
-    <Compile Include="HighlightHandlerStructs\Error.cs" />
-    <Compile Include="HighlightHandlerStructs\ModelParagraph.cs" />
+    <Compile Include="UsefulStructs\DocSection.cs" />
+    <Compile Include="UsefulStructs\ElementaryFragment.cs" />
+    <Compile Include="UsefulStructs\Error.cs" />
     <Compile Include="ResultWindow.xaml.cs">
       <DependentUpon>ResultWindow.xaml</DependentUpon>
     </Compile>
