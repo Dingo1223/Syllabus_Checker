@@ -3,11 +3,24 @@ using System.IO;
 
 namespace SyllabusChecker
 {
-    //Для хранения и передачи путей к файлам, выбранных в главном окне
+    /// <summary>
+    /// Для хранения и передачи путей к файлам, выбранных в главном окне
+    /// </summary>
     public class InputData
     {
+        /// <summary>
+        /// Путь к файлу макета
+        /// </summary>
         public string ModelPath { get; set; }
-        public string SyllablePath { get; set; }
+
+        /// <summary>
+        /// Путь к проверяемому файлу
+        /// </summary>
+        public string DocumentPath { get; set; }
+
+        /// <summary>
+        /// Путь к папке для сохранения результата
+        /// </summary>
         public string ResultFolderPath { get; set; }
 
         public InputData()
@@ -19,7 +32,7 @@ namespace SyllabusChecker
             {
                 sr = new StreamReader(Path.Combine(appDataPath, "paths.txt"));
                 ModelPath = sr.ReadLine();
-                SyllablePath = sr.ReadLine();
+                DocumentPath = sr.ReadLine();
                 ResultFolderPath = sr.ReadLine();
                 sr.Close();
             }
@@ -31,7 +44,7 @@ namespace SyllabusChecker
                 sw.WriteLine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments));
                 sw.Close();
                 ModelPath = "";
-                SyllablePath = "";
+                DocumentPath = "";
                 ResultFolderPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
             }
         }
