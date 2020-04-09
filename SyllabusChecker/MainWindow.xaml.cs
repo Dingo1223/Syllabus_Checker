@@ -124,6 +124,11 @@ namespace SyllabusChecker
                     MessageBox.Show(ex.Message);
                     return;
                 }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                    return;
+                }
             }
         }
 
