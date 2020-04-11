@@ -18,7 +18,7 @@ namespace SyllabusChecker
             InitializeComponent();
             InputData = new InputData();
             TbModelPath.Text = InputData.ModelPath;
-            TbSyllablePath.Text = InputData.DocumentPath;
+            TbSyllabusPath.Text = InputData.DocumentPath;
             TbResultFolderPath.Text = InputData.ResultFolderPath;
         }
 
@@ -41,7 +41,7 @@ namespace SyllabusChecker
         /// <summary>
         /// Обработка нажатия на кнопку выбора расположения проверяемого документа
         /// </summary>
-        private void BtnSelectSyllablePath_Click(object sender, RoutedEventArgs e)
+        private void BtnSelectSyllabusPath_Click(object sender, RoutedEventArgs e)
         {
             OpenFileDialog ofd = new OpenFileDialog
             {
@@ -50,7 +50,7 @@ namespace SyllabusChecker
             if (ofd.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
                 InputData.DocumentPath = ofd.FileName;
-                TbSyllablePath.Text = ofd.FileName;
+                TbSyllabusPath.Text = ofd.FileName;
             }
         }
 
@@ -73,7 +73,7 @@ namespace SyllabusChecker
         /// <summary>
         /// Обработка нажатия на кнопку "Выполнить проверку"
         /// </summary>
-        private void BtnCheckSyllableStart_Click(object sender, RoutedEventArgs e)
+        private void BtnCheckSyllabusStart_Click(object sender, RoutedEventArgs e)
         {
             if (!(new FileInfo(InputData.ModelPath).Exists) || (InputData.ModelPath == ""))
             {
@@ -89,7 +89,7 @@ namespace SyllabusChecker
             Checker checker;
 
             //Запуск проверки
-            if (rbSyllable.IsChecked == true) //Если проверяется рабочая программа
+            if (rbSyllabus.IsChecked == true) //Если проверяется рабочая программа
             {
                 try
                 {

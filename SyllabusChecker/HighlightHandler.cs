@@ -124,9 +124,7 @@ namespace SyllabusChecker
                 bool nextNonemptyIsGreen = false;
                 int counter = usefulModelParagraphs.Last() + 1;
                 while (counter <= SylParagraphs.Count && !HasSomeContent(SylParagraphs[counter].Text))
-                {
                     counter++;
-                }
                 if (counter <= SylParagraphs.Count && StartsWithGreenHighligth(counter))
                 {
                     nextNonemptyIsGreen = true;

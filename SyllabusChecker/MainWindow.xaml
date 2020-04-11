@@ -20,11 +20,11 @@
 
         <TextBlock Margin="4, 64, 4, 4" Text="Выберите проверяемый файл:" FontSize="14"
                    HorizontalAlignment="Left" VerticalAlignment="Top"/>
-        <TextBox x:Name="TbSyllablePath" Margin="4, 88, 100, 4" Text="" FontSize="14"  IsReadOnly="True"
+        <TextBox x:Name="TbSyllabusPath" Margin="4, 88, 100, 4" Text="" FontSize="14"  IsReadOnly="True"
                  HorizontalAlignment="Stretch" VerticalAlignment="Top" Background="{x:Null}"/>
-        <Button x:Name="BtnSelectSyllablePath" Margin="4, 87, 4, 4" Content="Обзор..." FontSize="14"
+        <Button x:Name="BtnSelectSyllabusPath" Margin="4, 87, 4, 4" Content="Обзор..." FontSize="14"
                 HorizontalAlignment="Right" VerticalAlignment="Top" Width="92"
-                Click="BtnSelectSyllablePath_Click"/>
+                Click="BtnSelectSyllabusPath_Click"/>
 
         <TextBlock Margin="4, 128, 4, 4" Text="Выберите папку для сохранения результата:" FontSize="14"
                    HorizontalAlignment="Left" VerticalAlignment="Top"/>
@@ -34,13 +34,13 @@
                 HorizontalAlignment="Right" VerticalAlignment="Top" Width="92"
                 Click="BtnSelectResultFolder_Click"/>
 
-        <Button x:Name="BtnCheckSyllableStart" Margin="4, 200, 4, 4" Content="Выполнить проверку" FontSize="14"
+        <Button x:Name="BtnCheckSyllabusStart" Margin="4, 200, 4, 4" Content="Выполнить проверку" FontSize="14"
                 HorizontalAlignment="Center" VerticalAlignment="Top" Width="160"
-                Click="BtnCheckSyllableStart_Click"/>
+                Click="BtnCheckSyllabusStart_Click"/>
 
         <TextBlock Margin="20, 232, 4, 4" Text="Тип проверяемого документа:"
                    HorizontalAlignment="Left" VerticalAlignment="Top"/>
-        <RadioButton x:Name="rbSyllable" Margin="20, 252, 4, 4" Content="Рабочая программа" GroupName="rb"
+        <RadioButton x:Name="rbSyllabus" Margin="20, 252, 4, 4" Content="Рабочая программа" GroupName="rb"
                      HorizontalAlignment="Left" VerticalAlignment="Top" IsChecked="True"/>
         <RadioButton x:Name="rbOther" Margin="164, 252, 4, 4" Content="Другой документ" GroupName="rb"
                      HorizontalAlignment="Left" VerticalAlignment="Top" IsChecked="False"/>
